@@ -103,7 +103,3 @@ export TF_VAR_instance_zone=ru-central-d
 ```bash
 export TF_VAR_instance_zone='["ru-central-a","ru-central-b"]'
 ```
-
-```bash
-tofu apply
-```
