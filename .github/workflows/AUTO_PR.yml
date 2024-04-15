@@ -9,6 +9,8 @@ on:
 jobs:
   pull-request:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Auto Pull Request
