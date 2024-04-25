@@ -1,0 +1,101 @@
+# Запустите сервисы как статические подсистемы
+# https://github.com/kubernetes/kubeadm/blob/main/docs/ha-considerations.md#option-2-run-the-services-as-static-pods
+- name: Настраиваю keepalived + haproxy
+  become: true
+  hosts:
+    - kubeadm_control_plane
+  roles:
+    - haproxy_static_pods
+
+- name: Разворачиваю kubernetes кластер
+  become: true
+  hosts:
+    - kubeadm
+  handlers:
+    - name: Перезагружаю виртуальные машины
+      ansible.builtin.reboot:
+  tasks:
+    - name: Добавляю модули br_netfilter и overlay
+      community.general.modprobe:
+        name: '{{ item }}'
+        state: present
+      with_items:
+        - br_netfilter
+        - overlay
+      # notify:
+      #   - Перезагружаю виртуальные машины
+
+    - name: Добавляю модули br_netfilter и overlay в /etc/modules
+      ansible.builtin.lineinfile:
+        path: /etc/modules
+        line: '{{ item }}'
+        create: true
+      with_items:
+        - br_netfilter
+        - overlay
+      # notify:
+      #   - Перезагружаю виртуальные машины
+
+    - name: Включаю маршрутизацию IP и iptables для моста
+      ansible.posix.sysctl:
+        name: '{{ item }}'
+        value: 1
+        state: present
+      with_items:
+        - net.ipv4.ip_forward
+        - net.bridge.bridge-nf-call-iptables
+
+    - name: Устанавливаю пакеты
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gpg
+          - software-properties-common
+        update_cache: true
+
+    - name: Добавляю gpg ключ для репозиториев Kubernetes и cri-o
+      ansible.builtin.apt_key:
+        url: '{{ item["url"] }}'
+        state: present
+        keyring: '{{ item["keyring"] }}'
+      with_items:
+        - {url: "https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key", keyring: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"}
+        - {url: "https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/Release.key", keyring: "/etc/apt/keyrings/cri-o-apt-keyring.gpg"}
+
+    - name: Добавляю репозитории Kubernetes и cri-o
+      ansible.builtin.apt_repository:
+        repo: '{{ item }}'
+        state: present
+      with_items:
+        - deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/ /
+        - deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /
+
+    - name: Устанавливаю пакеты kubelet, kubeadm, kubectl и cri-o
+      ansible.builtin.apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+          - cri-o
+        state: present
+        update_cache: true
+
+    - name: Предотвращаю обновление kubelet, kubeadm и kubectl
+      ansible.builtin.dpkg_selections:
+        name: '{{ item }}'
+        selection: hold
+      with_items:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    - name: Включаю и запускаю службы kubelet и cri-o
+      ansible.builtin.systemd:
+        name: '{{ item }}'
+        enabled: true
+        state: started
+      with_items:
+        - kubelet
+        - crio

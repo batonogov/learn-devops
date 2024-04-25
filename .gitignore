@@ -39,5 +39,15 @@ terraform.rc
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform
 
+# Created by https://www.toptal.com/developers/gitignore/api/ansible
+# Edit at https://www.toptal.com/developers/gitignore?templates=ansible
+
+### Ansible ###
+*.retry
+
+# End of https://www.toptal.com/developers/gitignore/api/ansible
+
 # Other
 .vscode
+.DS_Store
+ansible/secrets
