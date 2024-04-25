@@ -57,8 +57,6 @@ resource "proxmox_virtual_environment_vm" "kubeadm-cp-01" {
     }
     dns {
       servers = [
-        "10.0.70.65",
-        "10.0.70.66",
         "77.88.8.8"
       ]
     }
