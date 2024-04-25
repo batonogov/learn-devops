@@ -1,6 +1,7 @@
 # Машинка
 resource "proxmox_virtual_environment_vm" "vm-01" {
   name        = "vm-01"
+  migrate     = true
   description = "Managed by OpenTofu"
   tags        = ["opentofu", "test"]
   on_boot     = true
@@ -10,7 +11,7 @@ resource "proxmox_virtual_environment_vm" "vm-01" {
 
   # Шоблон из которого будет создавать ВМ
   clone {
-    vm_id     = "9000"
+    vm_id     = "2204"
     node_name = "pve-01"
     retries   = 2
   }

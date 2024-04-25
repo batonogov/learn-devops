@@ -40,12 +40,12 @@ export PROXMOX_STORAGE=proxmox-data-01
 apt update && apt install libguestfs-tools -y && \
 wget --backups=1 https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img && \
 virt-customize -a jammy-server-cloudimg-amd64.img --install qemu-guest-agent && \
-qm create 9000 --name "ubuntu-22.04-cloudinit-template" --cores 2 --memory 2048 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci && \
-qm set 9000 --virtio0 ${PROXMOX_STORAGE}:0,import-from=/root/jammy-server-cloudimg-amd64.img && \
-qm set 9000 --ide2 ${PROXMOX_STORAGE}:cloudinit && \
-qm set 9000 --boot order=virtio0 && \
-qm set 9000 --serial0 socket --vga serial0 && \
-qm template 9000
+qm create 2204 --name "ubuntu-22.04-cloudinit-template" --cores 2 --memory 2048 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci && \
+qm set 2204 --virtio0 ${PROXMOX_STORAGE}:0,import-from=/root/jammy-server-cloudimg-amd64.img && \
+qm set 2204 --ide2 ${PROXMOX_STORAGE}:cloudinit && \
+qm set 2204 --boot order=virtio0 && \
+qm set 2204 --serial0 socket --vga serial0 && \
+qm template 2204
 ```
 
 ---
