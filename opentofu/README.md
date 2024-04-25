@@ -4,6 +4,26 @@
 
 ---
 
+## Что такое OpenTofu/Terraform
+
+**Terraform** — это инструмент для создания и управления инфраструктурой.
+С его помощью можно создавать, обновлять и удалять любые интересующие вас ресурсы в различных облачных и не только облачных сервисах.
+
+**Terraform** позволяет описывать инфраструктуру в виде кода, что делает процесс её создания более эффективным и управляемым.
+Код на языке **HCL** (HashiCorp Configuration Language) описывает требуемую инфраструктуру, а **Terraform** автоматически создаёт или обновляет её.
+
+Информация об **OpenTofu** взята с [habr.com](https://habr.com/ru/companies/flant/news/762356/).
+
+20 сентября, на сайте **Linux Foundation** появилась новость о том, что фонд принял **OpenTofu** в число своих проектов.
+Теперь свободный форк **Terraform** будет развиваться под управлением **Linux Foundation**, что дает ряд преимуществ:
+
+- Он будет всегда **Open Source** — то есть соответствовать **Open Source Definition**, а не размытому определению «открытые исходники».
+- Он будет управляться открытым сообществом, а значит, прозрачно реализовывать и отражать видение разных разработчиков, а не единственного вендора.
+- Он будет беспристрастным — то есть не зависящим от прихотей одной компании.
+
+Кроме того, сами создатели открытого форка **Terraform** отмечают еще две особенности, которые повлечет за собой принятие проекта в **Linux Foundation**:
+обратная совместимость и хорошо проработанная модульная архитектура.
+
 Официальный сайт проекта [OpenTofu](https://opentofu.org/).
 Репозиторий провайдера [bpg/terraform-provider-proxmox](https://github.com/bpg/terraform-provider-proxmox).
 
@@ -13,19 +33,19 @@
 
 ### Создание шаблона Ubuntu 22.04
 
-На узле Promox создаем шаблон **Cloud Init** **Ubuntu 22.04**
+На узле Proxmox создаем шаблон **Cloud Init** **Ubuntu 22.04**
 
 ```sh
 export PROXMOX_STORAGE=proxmox-data-01
 apt update && apt install libguestfs-tools -y && \
 wget --backups=1 https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img && \
 virt-customize -a jammy-server-cloudimg-amd64.img --install qemu-guest-agent && \
-qm create 9000 --name "ubuntu-22.04-cloudinit-template" --cores 2 --memory 2048 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci && \
-qm set 9000 --virtio0 ${PROXMOX_STORAGE}:0,import-from=/root/jammy-server-cloudimg-amd64.img && \
-qm set 9000 --ide2 ${PROXMOX_STORAGE}:cloudinit && \
-qm set 9000 --boot order=virtio0 && \
-qm set 9000 --serial0 socket --vga serial0 && \
-qm template 9000
+qm create 2204 --name "ubuntu-22.04-cloudinit-template" --cores 2 --memory 2048 --net0 virtio,bridge=vmbr0 --scsihw virtio-scsi-pci && \
+qm set 2204 --virtio0 ${PROXMOX_STORAGE}:0,import-from=/root/jammy-server-cloudimg-amd64.img && \
+qm set 2204 --ide2 ${PROXMOX_STORAGE}:cloudinit && \
+qm set 2204 --boot order=virtio0 && \
+qm set 2204 --serial0 socket --vga serial0 && \
+qm template 2204
 ```
 
 ---
