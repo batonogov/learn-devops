@@ -263,9 +263,9 @@ kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 8000:80
 - Контейнерная среда выполнения, совместимая с Kubernetes (Docker v1.13+, containerd v1.3.7+ и т. д.)
 - Kubernetes >= v1.21
 - Установлен open-iscsi, и на всех узлах запущен демон iscsid.
-Это необходимо, поскольку Longhorn полагается на iscsiadm на узле для предоставления постоянных томов Kubernetes. Помощь в установке open-iscsi см. в этом разделе.
+Это необходимо, поскольку Longhorn полагается на iscsiadm на узле для предоставления постоянных томов Kubernetes. Помощь в установке open-iscsi см. в [этом разделе](https://longhorn.io/docs/1.6.1/deploy/install/#installing-open-iscsi).
 - Поддержка RWX требует, чтобы на каждом узле был установлен клиент NFSv4.
-        Об установке клиента NFSv4 читайте в этом разделе.
+        Об установке клиента NFSv4 читайте в [этом разделе](https://longhorn.io/docs/1.6.1/deploy/install/#installing-nfsv4-client).
 - Файловая система узла поддерживает функцию расширения файлов для хранения данных. В настоящее время мы поддерживаем:
         ext4
         XFS
