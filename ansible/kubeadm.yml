@@ -99,3 +99,27 @@
       with_items:
         - kubelet
         - crio
+
+- name: Устанавливаю пакеты для Longhorn
+  become: true
+  hosts:
+    - kubeadm_nodes
+  tasks:
+    - name: Устанавливаю нужные пакеты
+      ansible.builtin.apt:
+        name:
+          - open-iscsi
+          - nfs-common
+          - bash
+          - curl
+          - grep
+        state: present
+        update_cache: true
+
+    - name: Включаю и запускаю службы
+      ansible.builtin.systemd:
+        name: '{{ item }}'
+        enabled: true
+        state: started
+      with_items:
+        - iscsid
