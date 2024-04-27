@@ -1,0 +1,57 @@
+services:
+  # Сервис для развертывания приложения с профилем "blue"
+  web-blue: &web
+    build:
+      context: .
+    environment:
+      - VIRTUAL_HOST=web   # Виртуальный хост для NGINX
+      - VIRTUAL_PORT=8080  # Виртуальный порт для NGINX
+    expose:
+      - 8080
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"      # Лимитированный доступ к ресурсам CPU
+          memory: 32M      # Лимит памяти
+    restart: always        # Перезапускать сервис при падении
+    profiles:
+      - blue
+
+  # Сервис для развертывания приложения с профилем "green"
+  web-green:
+    <<: *web               # Используем настройки из сервиса web-blue
+    profiles:
+      - green
+
+  # NGINX-прокси
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:1.5.1-alpine
+    expose:
+      - 80
+    ports:
+      - 80:80              # Проксируем порт 80 на хосте
+    healthcheck:
+      # Периодичность проверки состояния (5 секунд)
+      interval: 5s
+      # Максимальное время ожидания ответа (5 секунд)
+      timeout: 5s
+      # Количество попыток в случае неудачной проверки (5 попыток)
+      retries: 5
+      # Время ожидания перед началом проверок (3 секунды)
+      start_period: 3s
+      # Команда для выполнения теста
+      test: curl -f http://localhost/ || exit 1
+    volumes:
+      # Монтируем сокет Docker
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      # Монтируем шаблон NGINX
+      - ./nginx.tmpl:/app/nginx.tmpl:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'      # Лимитированный доступ к ресурсам CPU
+          memory: 128M      # Лимит памяти
+    restart: always
+    profiles:
+      - blue
+      - green
