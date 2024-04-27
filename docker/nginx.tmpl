@@ -1,0 +1,20 @@
+{{ range $host, $containers := groupBy $ "Env.VIRTUAL_HOST" }}
+upstream {{ $host }} {
+
+{{ range $index, $value := $containers }}
+    {{ with $address := index $value.Addresses 0 }}
+    server {{ $value.Hostname }}:{{ $address.Port }};
+    {{ end }}
+{{ end }}
+
+}
+
+# конфигурация веб-сервера
+server {
+    listen 80;
+
+    location / {
+        proxy_pass http://{{ $host }};
+    }
+}
+{{ end }}
