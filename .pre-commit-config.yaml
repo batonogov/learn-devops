@@ -8,6 +8,7 @@ repos:
       - id: check-shebang-scripts-are-executable
       - id: check-vcs-permalinks
       - id: check-yaml
+        files: .*\.(yaml|yml)$
       - id: destroyed-symlinks
       - id: detect-private-key
       - id: end-of-file-fixer
@@ -27,4 +28,3 @@ repos:
     hooks:
       - id: tofu_fmt
       - id: tofu_validate
-      # - id: tofu_docs
