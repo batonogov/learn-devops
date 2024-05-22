@@ -1,0 +1,6 @@
+skip_list:
+  - risky-file-permissions
+
+exclude_paths:
+  - ansible/roles/haproxy_static_pods/files/haproxy.yaml
+  - ansible/roles/haproxy_static_pods/files/keepalived.yaml

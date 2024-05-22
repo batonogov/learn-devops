@@ -49,12 +49,12 @@ docker compose --profile blue up --wait --remove-orphans --scale web-blue=5
 Вывод
 
 ```output
- ✔ Network docker_default          Created          0.0s 
- ✔ Container docker-nginx-proxy-1  Healthy          0.1s 
- ✔ Container docker-web-blue-2     Healthy          0.1s 
- ✔ Container docker-web-blue-4     Healthy          0.1s 
- ✔ Container docker-web-blue-3     Healthy          0.0s 
- ✔ Container docker-web-blue-5     Healthy          0.1s 
+ ✔ Network docker_default          Created          0.0s
+ ✔ Container docker-nginx-proxy-1  Healthy          0.1s
+ ✔ Container docker-web-blue-2     Healthy          0.1s
+ ✔ Container docker-web-blue-4     Healthy          0.1s
+ ✔ Container docker-web-blue-3     Healthy          0.0s
+ ✔ Container docker-web-blue-5     Healthy          0.1s
  ✔ Container docker-web-blue-1     Healthy          0.1s
  ```
 
