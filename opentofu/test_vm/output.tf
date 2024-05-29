@@ -1,4 +1,7 @@
-output "ip_address_vm_01" {
-  description = "IP адрес vm-01"
-  value       = proxmox_virtual_environment_vm.vm-01.ipv4_addresses[1]
+output "vm_info" {
+  description = "Names and IP addresses of the created VMs"
+  value = {
+    for i in range(var.vm_count) :
+    format("vm-%02d", i + 1) => proxmox_virtual_environment_vm.vm[i].ipv4_addresses[1]
+  }
 }

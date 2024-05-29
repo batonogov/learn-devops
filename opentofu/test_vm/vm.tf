@@ -1,22 +1,24 @@
-# Машинка
-resource "proxmox_virtual_environment_vm" "vm-01" {
-  name        = "vm-01"
+variable "vm_count" {
+  description = "Number of VMs to create"
+  default     = 2
+}
+
+resource "proxmox_virtual_environment_vm" "vm" {
+  count       = var.vm_count
+  name        = format("vm-%02d", count.index + 1)
   migrate     = true
   description = "Managed by OpenTofu"
   tags        = ["opentofu", "test"]
   on_boot     = true
 
-  # Указываем целевой узел, на котором будет запущена ВМ
-  node_name = "pve-01"
+  node_name = format("pve-%02d", count.index + 1)
 
-  # Шоблон из которого будет создавать ВМ
   clone {
-    vm_id     = "2204"
+    vm_id     = "2404"
     node_name = "pve-01"
     retries   = 2
   }
 
-  # Активируем QEMU для этов ВМ
   agent {
     enabled = true
   }
@@ -26,19 +28,24 @@ resource "proxmox_virtual_environment_vm" "vm-01" {
   }
 
   cpu {
-    cores = 4
+    cores = 2
     type  = "host"
     numa  = true
   }
 
   memory {
-    dedicated = 4096
+    dedicated = 2048
+  }
+
+  vga {
+    memory = 4
+    type   = "serial0"
   }
 
   disk {
     size         = "40"
     interface    = "virtio0"
-    datastore_id = "proxmox-data-02"
+    datastore_id = "proxmox-data-01"
     file_format  = "raw"
   }
 
@@ -48,19 +55,22 @@ resource "proxmox_virtual_environment_vm" "vm-01" {
   }
 
   initialization {
-    datastore_id = "proxmox-data-02"
+    datastore_id = "proxmox-data-01"
     ip_config {
       ipv4 {
         address = "dhcp"
       }
     }
     dns {
-      servers = ["77.88.8.8"]
+      servers = [
+        "77.88.8.8",
+        "8.8.8.8"
+      ]
     }
     user_account {
       username = "infra"
       keys = [
-        "ssh-rsa..."
+        var.ssh_public_key
       ]
     }
   }
