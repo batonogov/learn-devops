@@ -1,6 +1,6 @@
 variable "vm_count" {
   description = "Number of VMs to create"
-  default     = 2
+  default     = 1
 }
 
 resource "proxmox_virtual_environment_vm" "vm" {

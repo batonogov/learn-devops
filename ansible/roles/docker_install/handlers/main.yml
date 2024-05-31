@@ -1,0 +1,7 @@
+---
+- name: Перезапускаю docker.service
+  ansible.builtin.systemd:
+    name: docker.service
+    state: restarted
+    enabled: true
+    daemon_reload: true
