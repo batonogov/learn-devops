@@ -1,0 +1,5 @@
+---
+# tasks file for docker-install
+- name: Install Docker on Ubuntu
+  ansible.builtin.import_tasks: ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'

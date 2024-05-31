@@ -1,0 +1,7 @@
+---
+- name: Развертывание docker
+  become: true
+  hosts:
+    - test_hosts
+  roles:
+    - docker_install

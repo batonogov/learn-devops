@@ -1,0 +1,27 @@
+---
+- name: Добавляю ключ Docker GPG
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+    keyring: /etc/apt/trusted.gpg.d/docker.gpg
+
+- name: Добавляю репозиторий Docker
+  ansible.builtin.apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+    filename: docker
+
+- name: Устанавливаю нужные пакеты
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+    state: present
+    update_cache: true
+
+- name: Наливаю daemon.json
+  ansible.builtin.copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    mode: '644'
+  notify:
+    - Перезапускаю docker.service

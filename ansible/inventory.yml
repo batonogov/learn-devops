@@ -19,3 +19,11 @@ kubeadm:
   vars:
     ansible_user: infra
     ansible_port: 22
+
+test_hosts:
+  hosts:
+    kubeadm-cp-01:
+      ansible_host: 10.0.75.203
+  vars:
+    ansible_user: infra
+    ansible_port: 22

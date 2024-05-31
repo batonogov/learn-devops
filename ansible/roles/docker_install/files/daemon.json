@@ -1,0 +1,7 @@
+{
+    "registry-mirrors": [
+        "https://dockerhub.timeweb.cloud",
+        "https://mirror.gcr.io",
+        "https://public.ecr.aws"
+    ]
+}
