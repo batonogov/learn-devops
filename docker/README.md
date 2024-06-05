@@ -70,13 +70,13 @@ bash ./deploy.sh
 
 ```output
 Список контейнеров
-NAME                   IMAGE                                 COMMAND                  SERVICE       CREATED          STATUS                    PORTS
-docker-nginx-proxy-1   nginxproxy/nginx-proxy:1.5.1-alpine   "/app/docker-entrypo…"   nginx-proxy   12 seconds ago   Up 5 seconds (healthy)    0.0.0.0:80->80/tcp
-docker-web-blue-1      docker-web-blue                       "./main"                 web-blue      12 seconds ago   Up 11 seconds (healthy)   8080/tcp
-docker-web-blue-2      docker-web-blue                       "./main"                 web-blue      12 seconds ago   Up 11 seconds (healthy)   8080/tcp
-docker-web-blue-3      docker-web-blue                       "./main"                 web-blue      12 seconds ago   Up 11 seconds (healthy)   8080/tcp
+NAME                   IMAGE                                 COMMAND                  SERVICE       CREATED         STATUS                   PORTS
+docker-nginx-proxy-1   nginxproxy/nginx-proxy:1.5.2-alpine   "/app/docker-entrypo…"   nginx-proxy   2 minutes ago   Up 2 minutes (healthy)   0.0.0.0:80->80/tcp
+docker-web-blue-1      docker-web-blue                       "./main"                 web-blue      7 seconds ago   Up 6 seconds (healthy)   8080/tcp
+docker-web-blue-2      docker-web-blue                       "./main"                 web-blue      7 seconds ago   Up 6 seconds (healthy)   8080/tcp
+docker-web-blue-3      docker-web-blue                       "./main"                 web-blue      7 seconds ago   Up 6 seconds (healthy)   8080/tcp
 Журналы запуска web-blue
-web-blue-2  | Сервер запущен на порту 8080...
 web-blue-1  | Сервер запущен на порту 8080...
 web-blue-3  | Сервер запущен на порту 8080...
+web-blue-2  | Сервер запущен на порту 8080...
 ```
