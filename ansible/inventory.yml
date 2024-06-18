@@ -27,3 +27,23 @@ test_hosts:
   vars:
     ansible_user: infra
     ansible_port: 22
+
+patroni_postgresql_cluster:
+  children:
+    patroni_postgresql_hosts:
+      hosts:
+        patroni-postgresql-01:
+          ansible_host: 10.0.75.111
+        patroni-postgresql-02:
+          ansible_host: 10.0.75.112
+        patroni-postgresql-03:
+          ansible_host: 10.0.75.113
+    haproxy_hosts:
+      hosts:
+        haproxy-01:
+          ansible_host: 10.0.75.114
+        haproxy-02:
+          ansible_host: 10.0.75.115
+  vars:
+    ansible_user: infra
+    ansible_port: 22
