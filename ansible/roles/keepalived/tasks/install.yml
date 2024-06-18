@@ -1,0 +1,7 @@
+---
+- name: Устанавливаю keepalived
+  ansible.builtin.apt:
+    name:
+      - keepalived
+    state: present
+    update_cache: true

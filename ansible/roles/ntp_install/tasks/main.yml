@@ -1,0 +1,9 @@
+---
+# tasks file for ntp-install
+- name: Устанавливаю ntp на Ubuntu
+  ansible.builtin.import_tasks: ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Устанавливаю ntp на Debian
+  ansible.builtin.import_tasks: debian.yml
+  when: ansible_distribution == 'Debian'

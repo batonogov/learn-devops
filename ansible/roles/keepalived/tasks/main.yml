@@ -1,0 +1,10 @@
+---
+# tasks file for keepalived
+- name: Устанавливаю keepalived
+  ansible.builtin.import_tasks: install.yml
+
+- name: Наливаю конфигурацию
+  ansible.builtin.include_tasks: config.yml
+
+- name: Запускаю сервис
+  ansible.builtin.include_tasks: start.yml

@@ -1,0 +1,34 @@
+[Unit]
+Description=etcd
+Requires=docker.service
+After=docker.service
+
+[Service]
+User={{ patroni_user }}
+Restart=always
+Environment="TOKEN={{ lookup('password', 'secrets/patroni-postgresql/etcd_cluster_token length=64') }}"
+Environment="CLUSTER=patroni-postgresql-01=http://10.0.75.111:2380,patroni-postgresql-02=http://10.0.75.112:2380,patroni-postgresql-03=http://10.0.75.113:2380"
+ExecStartPre=-/usr/bin/docker rm -f etcd
+ExecStart=/usr/bin/docker run \
+    --rm \
+    --user {{ patroni_uid }}:{{ patroni_uid }} \
+    --publish 2379:2379 \
+    --publish 2380:2380 \
+    --name etcd \
+    --volume=/var/lib/etcd:/etcd-data \
+    quay.io/coreos/etcd:{{ etcd_version }} \
+    /usr/local/bin/etcd \
+    --data-dir=/etcd-data \
+    --name {{ inventory_hostname }} \
+    --initial-advertise-peer-urls http://{{ ansible_host }}:2380 \
+    --listen-peer-urls http://0.0.0.0:2380 \
+    --advertise-client-urls http://{{ ansible_host }}:2379 \
+    --listen-client-urls http://0.0.0.0:2379 \
+    --initial-cluster ${CLUSTER} \
+    --initial-cluster-state new \
+    --initial-cluster-token ${TOKEN} \
+    --enable-v2=true
+ExecStop=/usr/bin/docker stop -t 10 etcd
+
+[Install]
+WantedBy=multi-user.target

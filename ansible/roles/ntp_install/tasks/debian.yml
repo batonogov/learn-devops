@@ -1,0 +1,22 @@
+---
+# tasks file for ntp-install
+- name: Настраиваю Московское время
+  community.general.timezone:
+    name: Europe/Moscow
+
+- name: Устанавливаю ntp
+  ansible.builtin.apt:
+    pkg:
+      - ntp
+    update_cache: true
+
+- name: Настраиваю сервис ntp
+  ansible.builtin.systemd:
+    name: ntp
+    state: started
+    enabled: true
+
+- name: Наливаю конфигурацию ntp из шаблона
+  ansible.builtin.template:
+    src: debian.conf.j2
+    dest: '/etc/ntpsec/ntp.conf'

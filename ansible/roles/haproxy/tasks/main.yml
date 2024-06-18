@@ -1,0 +1,7 @@
+---
+# tasks file for haproxy
+- name: Копирую конфигурацию haproxy
+  ansible.builtin.import_tasks: config.yml
+
+- name: Устанавливаю haproxy
+  ansible.builtin.import_tasks: install.yml

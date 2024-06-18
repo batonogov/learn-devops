@@ -1,0 +1,14 @@
+vrrp_instance VI_1 {
+    state MASTER
+    interface eth0
+    virtual_router_id {{ virtual_router_id }}
+    priority 101                        # PAY ATTENTION ON PRIORITY!!
+    authentication {
+        auth_type PASS
+        auth_pass {{ lookup('password', 'secrets/keepalived/' + virtual_ip + ' length=64') }}
+    }
+
+   virtual_ipaddress {
+       {{ virtual_ip }} dev eth0
+    }
+}

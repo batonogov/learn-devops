@@ -1,0 +1,21 @@
+[Unit]
+Description=haproxy
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f haproxy
+ExecStart=/usr/bin/docker run \
+  --rm \
+  --publish 5000:5000 \
+  --publish 5001:5001 \
+  --publish 7000:7000 \
+  --volume /usr/local/etc/haproxy/:/usr/local/etc/haproxy/:ro \
+  --sysctl net.ipv4.ip_unprivileged_port_start=0 \
+  --name haproxy \
+  haproxy:{{ haproxy_version }}
+ExecStop=/usr/bin/docker stop -t 10 haproxy
+
+[Install]
+WantedBy=multi-user.target

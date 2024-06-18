@@ -1,0 +1,5 @@
+- name: Настраиваю keepalived.service
+  ansible.builtin.systemd:
+    name: keepalived.service
+    state: started
+    enabled: true

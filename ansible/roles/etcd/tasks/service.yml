@@ -1,0 +1,21 @@
+---
+- name: Задаю права для директории
+  ansible.builtin.file:
+    path: /var/lib/etcd
+    state: directory
+    recurse: true
+    owner: "{{ patroni_uid }}"
+    group: "{{ patroni_uid }}"
+
+- name: Наливаю юнит файл etcd
+  ansible.builtin.template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+  notify:
+    - Перезапускаю etcd.service
+
+- name: Настраиваю etcd.service
+  ansible.builtin.systemd:
+    name: etcd.service
+    state: started
+    enabled: true

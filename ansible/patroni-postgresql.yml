@@ -1,0 +1,53 @@
+---
+- name: Подготовка узлов
+  become: true
+  hosts:
+    - patroni_postgresql_hosts
+  roles:
+    - ntp_install
+    - docker_install
+  tasks:
+    - name: Создаю пользователя
+      ansible.builtin.user:
+        name: "{{ patroni_user }}"
+        uid: "{{ patroni_uid }}"
+        shell: /usr/sbin/nologin
+        groups:
+          - docker
+
+- name: Подготовка кластера
+  become: true
+  hosts:
+    - patroni_postgresql_hosts
+  roles:
+    - etcd
+    - patroni
+
+- name: Подготовка кластера
+  become: true
+  hosts:
+    - haproxy_hosts
+  roles:
+    - ntp_install
+    - docker_install
+    - haproxy
+
+- name: Настройка master keepalived
+  become: true
+  hosts:
+    - haproxy-01
+  roles:
+    - role: keepalived
+      unit_file: "keepalived.master.conf.j2"
+      virtual_ip: "10.0.75.110/24"
+      virtual_router_id: 250
+
+- name: Настройка backup keepalived
+  become: true
+  hosts:
+    - haproxy-02
+  roles:
+    - role: keepalived
+      unit_file: "keepalived.backup.conf.j2"
+      virtual_ip: "10.0.75.110/24"
+      virtual_router_id: 250

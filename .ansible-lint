@@ -1,5 +1,6 @@
 skip_list:
   - risky-file-permissions
+  - var-naming[no-role-prefix]
 
 exclude_paths:
   - ansible/roles/haproxy_static_pods/files/haproxy.yaml

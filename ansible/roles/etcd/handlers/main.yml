@@ -1,0 +1,7 @@
+---
+- name: Перезапускаю etcd.service
+  ansible.builtin.systemd:
+    name: etcd.service
+    state: restarted
+    enabled: true
+    daemon_reload: true
