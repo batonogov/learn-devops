@@ -1,0 +1,3 @@
+---
+# defaults file for keepalived
+unit_file: keepalived.master.conf.j2

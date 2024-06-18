@@ -1,0 +1,7 @@
+---
+- name: Перезапускаю keepalived.service
+  ansible.builtin.systemd:
+    name: keepalived.service
+    state: restarted
+    enabled: true
+    daemon_reload: true

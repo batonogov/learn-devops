@@ -1,0 +1,7 @@
+- name: Наливаю конфигурацию keepalived
+  ansible.builtin.template:
+    src: "{{ unit_file }}"
+    dest: /etc/keepalived/keepalived.conf
+    mode: "644"
+  notify:
+    - Перезапускаю keepalived.service
