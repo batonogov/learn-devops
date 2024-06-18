@@ -1,0 +1,13 @@
+---
+- name: Создаю директорию /usr/local/etc/haproxy/
+  ansible.builtin.file:
+    path: /usr/local/etc/haproxy/
+    state: directory
+
+- name: Наливаю haproxy.cfg
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "/usr/local/etc/haproxy/haproxy.cfg"
+    mode: "755"
+  notify:
+    - Перезапускаю haproxy.service

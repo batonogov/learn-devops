@@ -1,0 +1,36 @@
+global
+    maxconn 100
+
+defaults
+    log    global
+    mode    tcp
+    retries 2
+    timeout client 30m
+    timeout connect 4s
+    timeout server 30m
+    timeout check 5s
+
+listen stats
+    mode http
+    bind *:7000
+    stats enable
+    stats uri /
+
+listen patroni-postgresql-primary
+    bind *:5000
+    option httpchk OPTIONS /master
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+    server 10.0.75.111 10.0.75.111:5432 maxconn 100 check port 8008
+    server 10.0.75.112 10.0.75.112:5432 maxconn 100 check port 8008
+    server 10.0.75.113 10.0.75.113:5432 maxconn 100 check port 8008
+
+listen patroni-postgresql-standbys
+    balance roundrobin
+    bind *:5001
+    option httpchk OPTIONS /replica
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+    server 10.0.75.111 10.0.75.111:5432 maxconn 100 check port 8008
+    server 10.0.75.112 10.0.75.112:5432 maxconn 100 check port 8008
+    server 10.0.75.113 10.0.75.113:5432 maxconn 100 check port 8008

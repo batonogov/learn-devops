@@ -1,0 +1,8 @@
+---
+# handlers file for haproxy
+- name: Перезапускаю haproxy.service
+  ansible.builtin.systemd:
+    name: haproxy.service
+    state: restarted
+    enabled: true
+    daemon_reload: true
