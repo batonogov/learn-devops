@@ -1,0 +1,6 @@
+---
+- name: Наливаю юнит файл
+  ansible.builtin.import_tasks: service.yml
+
+- name: Наливаю конфигурацию
+  ansible.builtin.import_tasks: config.yml

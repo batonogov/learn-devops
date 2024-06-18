@@ -1,0 +1,26 @@
+---
+- name: Наливаю юнит файл patroni
+  ansible.builtin.template:
+    src: patroni.service.j2
+    dest: /etc/systemd/system/patroni.service
+  notify:
+    - Перезапускаю patroni.service
+
+- name: Создаю директории и задаю права
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0700"
+    owner: "999"
+    group: "999"
+  loop:
+    - "{{ pg_data_dir }}"
+    - "{{ pg_data_dir }}/data"
+  notify:
+    - Перезапускаю patroni.service
+
+- name: Настраиваю patroni.service
+  ansible.builtin.systemd:
+    name: patroni.service
+    state: started
+    enabled: true

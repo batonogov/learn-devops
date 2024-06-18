@@ -1,0 +1,26 @@
+[Unit]
+Description=patroni
+Requires=etcd.service
+After=etcd.service
+
+[Service]
+User={{ patroni_user }}
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f patroni
+ExecStart=/usr/bin/docker run \
+    --rm \
+    --name patroni \
+    --hostname {{ inventory_hostname }} \
+    --publish 5432:5432 \
+    --publish 8008:8008 \
+    --publish 8091:8091 \
+    --add-host "patroni-postgresql-01:10.0.75.111" \
+    --add-host "patroni-postgresql-02:10.0.75.112" \
+    --add-host "patroni-postgresql-03:10.0.75.113" \
+    --volume={{ patroni_config_dir }}/config.yml:{{ patroni_config_dir }}/config.yml:ro \
+    --volume={{ pg_data_dir }}:{{ pg_data_dir }} \
+    ghcr.io/batonogov/patroni-docker:{{ image_version }}
+ExecStop=/usr/bin/docker stop -t 10 patroni
+
+[Install]
+WantedBy=multi-user.target

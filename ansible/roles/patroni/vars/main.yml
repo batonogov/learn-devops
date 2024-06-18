@@ -1,0 +1,4 @@
+---
+image_version: v3.3.0-pg16.3
+pg_data_dir: /var/lib/postgresql
+patroni_config_dir: /etc/patroni

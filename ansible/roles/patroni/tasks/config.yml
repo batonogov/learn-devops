@@ -1,0 +1,17 @@
+---
+- name: Создаю директории и задаю права
+  ansible.builtin.file:
+    path: "{{ patroni_config_dir }}"
+    state: directory
+    mode: "755"
+    owner: "999"
+    group: "999"
+
+- name: Наливаю конфиг patroni
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: "{{ patroni_config_dir }}/config.yml"
+    mode: "755"
+    # backup: true
+  notify:
+    - Перезапускаю patroni.service
