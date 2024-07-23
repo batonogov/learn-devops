@@ -1,0 +1,27 @@
+- name: Подготавливаю узлы
+  become: true
+  hosts:
+    - nginx_hosts
+  roles:
+    - docker_install
+    - nginx_install
+
+- name: Настраиваю keepalived
+  become: true
+  hosts:
+    - nginx-01
+  roles:
+    - role: keepalived
+      unit_file: "keepalived.master.conf.j2"
+      virtual_ip: "10.0.75.90/24"
+      virtual_router_id: 10
+
+- name: Настраиваю keepalived
+  become: true
+  hosts:
+    - nginx-02
+  roles:
+    - role: keepalived
+      unit_file: "keepalived.backup.conf.j2"
+      virtual_ip: "10.0.75.90/24"
+      virtual_router_id: 10

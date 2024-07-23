@@ -1,0 +1,8 @@
+---
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: /var/lib/minio
+    state: directory
+    owner: "{{ minio_username }}"
+    group: "{{ minio_username }}"
+    mode: "755"

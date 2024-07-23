@@ -1,0 +1,16 @@
+---
+- name: Создаю пользователя nginx
+  ansible.builtin.import_tasks: user.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Копирую конфигурацию
+  ansible.builtin.import_tasks: config.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Генерирую самоподписанный сертификат
+  ansible.builtin.import_tasks: cert.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Устанавливаю nginx
+  ansible.builtin.import_tasks: nginx.yml
+  when: ansible_distribution == 'Ubuntu'

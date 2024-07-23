@@ -1,0 +1,5 @@
+---
+# vars file for minio_start
+# Мы качаем docker image отсюда: https://quay.io/minio/minio/
+minio_version: RELEASE.2024-07-16T23-46-41Z
+minio_uid: 1111

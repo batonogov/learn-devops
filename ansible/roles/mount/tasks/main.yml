@@ -1,0 +1,8 @@
+---
+- name: Mount up device
+  ansible.posix.mount:
+    path: '{{ item["path"] }}'
+    src: '{{ item["src"] }}'
+    fstype: "{{ filesystem }}"
+    state: mounted
+  loop: "{{ device }}"

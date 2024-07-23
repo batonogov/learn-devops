@@ -1,0 +1,13 @@
+---
+- name: Загружаю образ
+  community.docker.docker_image:
+    name: "quay.io/minio/minio"
+    tag: "{{ minio_version }}"
+    source: pull
+
+- name: Перезапускаю minio.service
+  ansible.builtin.systemd:
+    name: minio.service
+    state: restarted
+    enabled: true
+    daemon_reload: true

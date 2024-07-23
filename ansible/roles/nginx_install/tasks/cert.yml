@@ -1,0 +1,34 @@
+---
+- name: Создаю директорию для ключей
+  ansible.builtin.file:
+    path: /etc/ssl/private
+    state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: "755"
+
+- name: Генерирую приватный ключ
+  community.crypto.openssl_privatekey:
+    path: "/etc/ssl/private/private.key"
+    mode: "0600"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+
+- name: Создаю запроса на подписание сертификата (CSR) для самоподписанного сертификата
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "/etc/ssl/private/private.key"
+    common_name: "minio"
+    organization_name: Example, Inc.
+    subject_alt_name:
+      - "DNS:s3.example.local"
+  register: csr
+
+- name: Создаю самоподписанный сертификат из CSR
+  community.crypto.x509_certificate:
+    path: "/etc/ssl/private/minio.crt"
+    csr_content: "{{ csr.csr }}"
+    privatekey_path: "/etc/ssl/private/private.key"
+    provider: selfsigned
+    mode: "0640"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"

@@ -1,0 +1,19 @@
+---
+- name: Создаю директорию для nginx conf
+  ansible.builtin.file:
+    path: /etc/nginx/conf.d
+    state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: "755"
+
+- name: Синхронизирую конфигурационные файлы
+  ansible.posix.synchronize:
+    src: "conf.d/"
+    dest: "/etc/nginx/conf.d/"
+    delete: true
+    rsync_opts:
+      - "--chown={{ nginx_user }}:{{ nginx_user }}"
+      - "--chmod=F640"
+  notify:
+    - Перезапускаю сервер nginx

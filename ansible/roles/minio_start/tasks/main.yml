@@ -1,0 +1,10 @@
+---
+# tasks file for minio_start
+- name: Создаю пользователя
+  ansible.builtin.import_tasks: add_user.yml
+
+- name: Создаю директории
+  ansible.builtin.import_tasks: add_dirs.yml
+
+- name: Запускаю minio
+  ansible.builtin.import_tasks: start_minio.yml

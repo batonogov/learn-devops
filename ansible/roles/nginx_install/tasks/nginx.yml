@@ -1,0 +1,23 @@
+---
+- name: Наливаю docker-compose файл nginx
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "/home/{{ nginx_user }}/docker-compose.yml"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: "640"
+
+- name: Налаживаю права для директории /etc/letsencrypt/
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    recurse: true
+  with_items:
+    - "/etc/letsencrypt/"
+
+- name: Поднимаю nginx
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ nginx_user }}/"
+    remove_orphans: true
+    wait: true

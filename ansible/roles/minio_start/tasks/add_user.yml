@@ -1,0 +1,8 @@
+---
+- name: Создаю пользователя
+  ansible.builtin.user:
+    name: "{{ minio_username }}"
+    shell: /sbin/nologin
+    create_home: true
+    groups: docker
+    uid: "{{ minio_uid }}"

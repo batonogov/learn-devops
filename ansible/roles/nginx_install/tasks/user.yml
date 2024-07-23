@@ -1,0 +1,7 @@
+---
+- name: Создаю пользователя {{ nginx_user }}
+  ansible.builtin.user:
+    name: "{{ nginx_user }}"
+    state: present
+    groups: docker
+    shell: /bin/bash

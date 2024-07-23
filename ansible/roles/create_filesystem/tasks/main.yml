@@ -1,0 +1,7 @@
+---
+# tasks file for create_filesystem
+- name: Create a filesystem
+  community.general.filesystem:
+    fstype: "{{ filesystem }}"
+    dev: '{{ item["src"] }}'
+  loop: "{{ device }}"
