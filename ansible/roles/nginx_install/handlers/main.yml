@@ -1,0 +1,8 @@
+---
+- name: Перезапускаю сервер nginx
+  community.docker.docker_container_exec:
+    container: nginx
+    command: "{{ item }}"
+  loop:
+    - nginx -t
+    - nginx -s reload

@@ -1,0 +1,34 @@
+---
+- name: Наливаю переменные
+  ansible.builtin.template:
+    src: minio.config.j2
+    dest: /etc/default/minio
+    owner: "{{ minio_username }}"
+    group: "{{ minio_username }}"
+    mode: "644"
+  notify:
+    - Перезапускаю minio.service
+
+- name: Наливаю юнит файл
+  ansible.builtin.template:
+    src: minio.service.j2
+    dest: /etc/systemd/system/minio.service
+    mode: "644"
+  notify:
+    - Загружаю образ
+    - Перезапускаю minio.service
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: '{{ item["path"] }}/minio'
+    state: directory
+    owner: "{{ minio_username }}"
+    group: "{{ minio_username }}"
+    mode: "755"
+  loop: "{{ device }}"
+
+- name: Настраиваю minio.service
+  ansible.builtin.systemd:
+    name: minio.service
+    state: started
+    enabled: true

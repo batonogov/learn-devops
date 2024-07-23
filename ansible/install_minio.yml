@@ -1,0 +1,24 @@
+---
+- name: Подготовка узлов
+  become: true
+  hosts:
+    - minio_hosts
+  roles:
+    - docker_install
+
+- name: Развертывание MinIO Multi-Node Multi-Drive
+  become: true
+  hosts:
+    - minio_hosts
+  vars:
+    filesystem: xfs
+    device_name:
+      - /dev/vdb
+    device:
+      - { src: /dev/vdb, path: /mnt/disk1 }
+    minio_username: minio
+  roles:
+    - create_filesystem
+    - mount
+    - minio_start
+    - docker_cleaner

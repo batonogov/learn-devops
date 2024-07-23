@@ -1,0 +1,28 @@
+services:
+  nginx:
+    image: nginx:{{ nginx_version }}
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - /etc/nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - /etc/nginx/include.d/:/etc/nginx/include.d/:ro
+      - /etc/ssl/private/:/etc/ssl/private/:ro
+      - /var/lib/letsencrypt/:/var/lib/letsencrypt/:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - certbot
+
+  certbot:
+    image: certbot/certbot:{{ certbot_version }}
+    container_name: certbot
+    restart: always
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /etc/letsencrypt/ -n; sleep 12h & wait $${!}; done;'"

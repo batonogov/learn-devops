@@ -1,0 +1,5 @@
+---
+# vars file for nginx-install
+nginx_version: 1.27.0-alpine
+nginx_user: nginx
+certbot_version: v2.11.0

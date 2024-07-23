@@ -1,0 +1,3 @@
+virtual_environment_api_token = "fedor@pve!opentofu=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+virtual_environment_endpoint = "https://x.x.x.x:8006/"
+ssh_public_key = "ssh-rsa ..."

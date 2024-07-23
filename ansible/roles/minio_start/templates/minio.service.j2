@@ -1,0 +1,29 @@
+[Unit]
+Description=minio
+Requires=docker.service
+After=docker.service
+
+[Service]
+User={{ minio_username }}
+Group={{ minio_username }}
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f minio
+ExecStart=/usr/bin/docker run \
+  --rm \
+  --network host \
+  --user {{ minio_uid }}:{{ minio_uid }} \
+  --name minio \
+  --env	"MINIO_CONFIG_ENV_FILE=/etc/config.env" \
+  --add-host "minio-node1:10.0.75.55" \
+  --add-host "minio-node2:10.0.75.56" \
+  --add-host "minio-node3:10.0.75.57" \
+  --add-host "minio-node4:10.0.75.58" \
+  --volume /etc/default/minio:/etc/config.env:ro \
+  --volume /var/lib/minio:/var/lib/minio \
+  --volume /mnt/disk1/minio:/mnt/disk1/minio \
+  quay.io/minio/minio:{{ minio_version }} \
+  server /var/lib/minio --console-address ":9001"
+ExecStop=/usr/bin/docker stop -t 10 minio
+
+[Install]
+WantedBy=multi-user.target
