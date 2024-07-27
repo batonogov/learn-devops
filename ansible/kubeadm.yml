@@ -1,44 +1,29 @@
-# Запустите сервисы как статические подсистемы
-# https://github.com/kubernetes/kubeadm/blob/main/docs/ha-considerations.md#option-2-run-the-services-as-static-pods
-- name: Настраиваю keepalived + haproxy
-  become: true
-  hosts:
-    - kubeadm_control_plane
-  roles:
-    - haproxy_static_pods
-
-- name: Разворачиваю kubernetes кластер
+# Подготовка к запуску Kubernetes кластера
+- name: Подготоваливаю узлы для kubernetes кластера
   become: true
   hosts:
     - kubeadm
-  handlers:
-    - name: Перезагружаю виртуальные машины
-      ansible.builtin.reboot:
   tasks:
     - name: Добавляю модули br_netfilter и overlay
       community.general.modprobe:
-        name: '{{ item }}'
+        name: "{{ item }}"
         state: present
       with_items:
         - br_netfilter
         - overlay
-      # notify:
-      #   - Перезагружаю виртуальные машины
 
     - name: Добавляю модули br_netfilter и overlay в /etc/modules
       ansible.builtin.lineinfile:
         path: /etc/modules
-        line: '{{ item }}'
+        line: "{{ item }}"
         create: true
       with_items:
         - br_netfilter
         - overlay
-      # notify:
-      #   - Перезагружаю виртуальные машины
 
     - name: Включаю маршрутизацию IP и iptables для моста
       ansible.posix.sysctl:
-        name: '{{ item }}'
+        name: "{{ item }}"
         value: 1
         state: present
       with_items:
@@ -54,6 +39,9 @@
           - gpg
           - software-properties-common
         update_cache: true
+      register: apt_res
+      retries: 5
+      until: apt_res is success
 
     - name: Добавляю gpg ключ для репозиториев Kubernetes и cri-o
       ansible.builtin.apt_key:
@@ -61,15 +49,21 @@
         state: present
         keyring: '{{ item["keyring"] }}'
       with_items:
-        - {url: "https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key", keyring: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"}
-        - {url: "https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/Release.key", keyring: "/etc/apt/keyrings/cri-o-apt-keyring.gpg"}
+        - {
+            url: "https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key",
+            keyring: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg",
+          }
+        - {
+            url: "https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/Release.key",
+            keyring: "/etc/apt/keyrings/cri-o-apt-keyring.gpg",
+          }
 
     - name: Добавляю репозитории Kubernetes и cri-o
       ansible.builtin.apt_repository:
-        repo: '{{ item }}'
+        repo: "{{ item }}"
         state: present
       with_items:
-        - deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/ /
+        - deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://pkgs.k8s.io/addons:/cri-o:/stable:/v1.30/deb/ /
         - deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /
 
     - name: Устанавливаю пакеты kubelet, kubeadm, kubectl и cri-o
@@ -84,7 +78,7 @@
 
     - name: Предотвращаю обновление kubelet, kubeadm и kubectl
       ansible.builtin.dpkg_selections:
-        name: '{{ item }}'
+        name: "{{ item }}"
         selection: hold
       with_items:
         - kubelet
@@ -93,33 +87,88 @@
 
     - name: Включаю и запускаю службы kubelet и cri-o
       ansible.builtin.systemd:
-        name: '{{ item }}'
+        name: "{{ item }}"
         enabled: true
         state: started
       with_items:
         - kubelet
         - crio
 
-- name: Устанавливаю пакеты для Longhorn
+# Запуск сервисов keepalived и haproxy как статических подсистем
+# https://github.com/kubernetes/kubeadm/blob/main/docs/ha-considerations.md#option-2-run-the-services-as-static-pods
+- name: Настраиваю keepalived + haproxy и инициализирую кластер
   become: true
   hosts:
-    - kubeadm_nodes
+    - kubeadm_control_plane
+  roles:
+    - haproxy_static_pods
   tasks:
-    - name: Устанавливаю нужные пакеты
-      ansible.builtin.apt:
-        name:
-          - open-iscsi
-          - nfs-common
-          - bash
-          - curl
-          - grep
-        state: present
-        update_cache: true
+    - name: Инициализирую высокодоступный кластер
+      run_once: true
+      ansible.builtin.command: |
+        kubeadm init \
+          --pod-network-cidr=10.244.0.0/16 \
+          --control-plane-endpoint=10.0.75.80:8888 \
+          --upload-certs \
+          --skip-phases=addon/kube-proxy
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      notify:
+        - Создаю token для control-plane
+        - Создаю token для node
+        - Добавляю control-plane узлы в кластер
+        - Добавляю node узлы в кластер
+  handlers:
+    - name: Создаю token для control-plane
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          echo $(kubeadm token create --print-join-command) \
+            --control-plane \
+            --certificate-key \
+            $(kubeadm init phase upload-certs --upload-certs | grep -vw -e certificate -e Namespace)
+        executable: /bin/bash
+      register: join_control_plane_raw
+    - name: Создаю token для node
+      ansible.builtin.command: kubeadm token create --print-join-command
+      register: join_node_raw
+    - name: Добавляю control-plane узлы в кластер
+      ansible.builtin.command: "{{ join_control_plane_raw.stdout }}"
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['kubeadm_control_plane'] }}"
+    - name: Добавляю node узлы в кластер
+      ansible.builtin.command: "{{ join_node_raw.stdout }}"
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['kubeadm_nodes'] }}"
 
-    - name: Включаю и запускаю службы
-      ansible.builtin.systemd:
-        name: '{{ item }}'
-        enabled: true
-        state: started
-      with_items:
-        - iscsid
+# Подготовка control-plane узлов
+- name: Подготовка control-plane узлов для работы с kubectl
+  become: true
+  gather_facts: false
+  hosts:
+    - kubeadm_control_plane
+  tasks:
+    - name: Создаю директорию .kube
+      become_user: infra
+      ansible.builtin.file:
+        path: $HOME/.kube
+        state: directory
+        mode: "755"
+    - name: Копирую admin.conf в директорию .kube
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/infra/.kube/config
+        remote_src: true
+        owner: infra
+        group: infra
+        mode: "600"
+    - name: Копирую kube/config
+      run_once: true
+      ansible.posix.synchronize:
+        src: "~/.kube/config" # remote host
+        dest: "~/.kube/config" # localhost
+        mode: pull

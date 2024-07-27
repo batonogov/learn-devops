@@ -3,27 +3,19 @@ kubeadm:
     kubeadm_control_plane:
       hosts:
         kubeadm-cp-01:
-          ansible_host: 10.0.70.70
+          ansible_host: 10.0.75.81
         kubeadm-cp-02:
-          ansible_host: 10.0.70.78
+          ansible_host: 10.0.75.82
         kubeadm-cp-03:
-          ansible_host: 10.0.70.79
+          ansible_host: 10.0.75.83
     kubeadm_nodes:
       hosts:
         kubeadm-node-01:
-          ansible_host: 10.0.70.71
+          ansible_host: 10.0.75.84
         kubeadm-node-02:
-          ansible_host: 10.0.70.77
+          ansible_host: 10.0.75.85
         kubeadm-node-03:
-          ansible_host: 10.0.70.74
-  vars:
-    ansible_user: infra
-    ansible_port: 22
-
-test_hosts:
-  hosts:
-    kubeadm-cp-01:
-      ansible_host: 10.0.75.203
+          ansible_host: 10.0.75.86
   vars:
     ansible_user: infra
     ansible_port: 22

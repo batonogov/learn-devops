@@ -1,0 +1,6 @@
+kubeProxyReplacement: true
+k8sServiceHost: 10.0.75.80
+k8sServicePort: 8888
+l2announcements:
+  enabled: true
+devices: eth+

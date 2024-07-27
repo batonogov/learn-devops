@@ -1,0 +1,9 @@
+grafana:
+  ingress:
+    enabled: true
+    hosts:
+      - grafana.example.local
+    tls:
+      - secretName: grafana-general-tls
+        hosts:
+          - grafana.example.local
