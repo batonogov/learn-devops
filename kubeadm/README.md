@@ -1,13 +1,18 @@
 # Настройка kubernetes кластера после чистой установки при помощи **kubeadm**
 
+## Создание ВМ
+
+Наш кластер работает на 6 виртуальных машинах (3 control-plane и 3 node) и разворачивается с помощью [OpenTofu](../opentofu/kubeadm).
+
 ## Подготовка ВМ
 
-Тестирование проводилось на **Ubuntu 22.04**
+Тестирование проводилось на **Ubuntu 24.04**
 
 Подготавливаем ВМ при помощи [плейбука](../ansible/kubeadm.yml)
 
-Плейбук настроит все что нудно для работы **Kubernetes**.
+Плейбук настроит все что нужно для работы **Kubernetes**.
 Добавит необходимые **модули ядра**, установит **kubelet**, **kubeadm**, **kubectl**, **cri-o**... и перезапустит машинки если это необходимо.
+Также произойдет инициализация кластера в HA режиме без **kube-proxy**.
 
 Запускаем плейбук
 
@@ -19,40 +24,46 @@ ansible-playbook kubeadm.yml
 
 ```output
 PLAY RECAP *******************************************************************************************************
-kubeadm-cp-01              : ok=19   changed=16   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-kubeadm-cp-02              : ok=19   changed=16   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-kubeadm-cp-03              : ok=19   changed=16   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-kubeadm-node-01            : ok=12   changed=10   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-kubeadm-node-02            : ok=12   changed=10   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
-kubeadm-node-03            : ok=12   changed=10   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+kubeadm-cp-01              : ok=28   changed=23   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+kubeadm-cp-02              : ok=22   changed=17   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+kubeadm-cp-03              : ok=22   changed=17   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+kubeadm-node-01            : ok=13   changed=11   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+kubeadm-node-02            : ok=13   changed=11   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+kubeadm-node-03            : ok=13   changed=11   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
-вторник 23 апреля 2024  09:29:22 +0300 (0:00:41.104)       0:02:19.111 ********
+четверг 02 мая 2024  19:33:56 +0500 (0:00:02.841)       0:04:44.638 ***********
 ===============================================================================
-Устанавливаю пакеты kubelet, kubeadm, kubectl и cri-o ---------------------------------------------------- 51.97s
-Перезагружаю виртуальные машины -------------------------------------------------------------------------- 41.10s
-Добавляю репозитории Kubernetes и cri-o ------------------------------------------------------------------ 12.58s
-Устанавливаю пакеты --------------------------------------------------------------------------------------- 6.54s
-upgrade_packages : Обновляю все пакеты до актуальных версий ----------------------------------------------- 3.54s
-Добавляю gpg ключ для репозиториев Kubernetes и cri-o ----------------------------------------------------- 2.61s
-Gathering Facts ------------------------------------------------------------------------------------------- 2.53s
-Gathering Facts ------------------------------------------------------------------------------------------- 2.53s
-Включаю маршрутизацию IP и iptables для моста ------------------------------------------------------------- 2.19s
-Включаю и запускаю службы kubelet и cri-o ----------------------------------------------------------------- 2.09s
-Предотвращаю обновление kubelet, kubeadm и kubectl -------------------------------------------------------- 1.87s
-haproxy_static_pods : Создать директории /etc/kubernetes/manifests и /etc/keepalived ---------------------- 1.64s
-Добавляю модули br_netfilter и overlay -------------------------------------------------------------------- 1.21s
-Добавляю модули br_netfilter и overlay в /etc/modules ----------------------------------------------------- 1.20s
-haproxy_static_pods : Наливаю keepalived.conf ------------------------------------------------------------- 1.19s
-haproxy_static_pods : Наливаю haproxy.cfg ----------------------------------------------------------------- 1.11s
-haproxy_static_pods : Наливаю haproxy static pods manifest ------------------------------------------------ 1.09s
-haproxy_static_pods : Наливаю check_apiserver.sh ---------------------------------------------------------- 1.07s
-haproxy_static_pods : Наливаю keepalived static pods manifest --------------------------------------------- 1.03s
+Добавляю control-plane узлы в кластер ------------------------------------------------ 67.74s
+Инициализирую высокодоступный кластер ------------------------------------------------ 50.23s
+Устанавливаю пакеты kubelet, kubeadm, kubectl и cri-o -------------------------------- 44.44s
+Добавляю репозитории Kubernetes и cri-o ---------------------------------------------- 14.60s
+Устанавливаю нужные пакеты ----------------------------------------------------------- 13.38s
+Добавляю node узлы в кластер --------------------------------------------------------- 11.06s
+Устанавливаю пакеты ------------------------------------------------------------------- 7.83s
+Предотвращаю обновление kubelet, kubeadm и kubectl ------------------------------------ 4.89s
+Добавляю gpg ключ для репозиториев Kubernetes и cri-o --------------------------------- 4.74s
+haproxy_static_pods : Наливаю конфигурацию keepalived --------------------------------- 4.62s
+haproxy_static_pods : Создать директории /etc/kubernetes/manifests и /etc/keepalived -- 4.48s
+Gathering Facts ----------------------------------------------------------------------- 4.44s
+Включаю и запускаю службы kubelet и cri-o --------------------------------------------- 4.30s
+upgrade_packages : Обновляю все пакеты до актуальных версий --------------------------- 4.20s
+Gathering Facts ----------------------------------------------------------------------- 3.70s
+haproxy_static_pods : Наливаю check_apiserver.sh -------------------------------------- 3.52s
+haproxy_static_pods : Наливаю haproxy.cfg --------------------------------------------- 3.31s
+haproxy_static_pods : Наливаю haproxy static pods manifest ---------------------------- 3.31s
+haproxy_static_pods : Наливаю keepalived static pods manifest ------------------------- 3.23s
+Добавляю модули br_netfilter и overlay ------------------------------------------------ 3.21s
 ```
+
+Если все прошло успешно, то можно перейти к [настройке CNI](README.md#%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B0-cni).
 
 ## Инициализация кластера
 
 Первый вариант подходит для тестирования, или создания не отказоустоичивого кластера,
 Второй вариант создаст отказоустойчивый кластер готовый для прода.
+Ansible Playbook создает второй вариант.
+
+Дальше описаны варианты для понимания работы.
 
 ### Non HA (Подходит для тестирования, не рекомендуется для прода)
 
@@ -81,10 +92,19 @@ kubeadm-node-02   Ready    <none>          13s    v1.30.0   10.0.70.77    <none>
 ### HA (Production Ready решение, рекомендуется)
 
 Мы разместим **haproxy** и **keepalived** на **control-plane** узлах. Конфигурации налиты при помощи Ansible на этапе подготовки.
-Наш виртуальный IP: **10.0.70.85:7443** для взаимодействия с **Kube Api Server**
+Наш виртуальный IP: **10.0.70.85:8888** для взаимодействия с **Kube Api Server**
+
+Обратите внимание, что мы не устанавливаем **kube-proxy**, для этого мы указали ключ **--skip-phases=addon/kube-proxy**,
+этот вариант подходит при использовании **Kubernetes** без **kube-proxy** и позволяет использовать **Cilium** для его полной замены.
+
+Если вы планируете использовать **Flannel**, нужно оставить **kube-proxy**.
 
 ```sh
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint=10.0.70.85:7443 --upload-certs
+sudo kubeadm init \
+    --pod-network-cidr=10.244.0.0/16 \
+    --control-plane-endpoint=10.0.70.85:8888 \
+    --upload-certs \
+    --skip-phases=addon/kube-proxy
 ```
 
 При успешном выполнении мы увидим примерно следующее
@@ -108,7 +128,7 @@ Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
 
 You can now join any number of the control-plane node running the following command on each as root:
 
-  kubeadm join 10.0.70.85:7443 --token r120zn.za3vq0au6kzgoepu \
+  kubeadm join 10.0.70.85:8888 --token r120zn.za3vq0au6kzgoepu \
         --discovery-token-ca-cert-hash sha256:cacb3c674f63d7f261c4fed403f59ce6e7d4c869c3748e301c98b2b9f17f7786 \
         --control-plane --certificate-key 31ba08487b6899c2ebe43dd3857e168840a98d1077a7998c79f6f4838b4c08f7
 
@@ -118,7 +138,7 @@ As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you c
 
 Then you can join any number of worker nodes by running the following on each as root:
 
-kubeadm join 10.0.70.85:7443 --token r120zn.za3vq0au6kzgoepu \
+kubeadm join 10.0.70.85:8888 --token r120zn.za3vq0au6kzgoepu \
         --discovery-token-ca-cert-hash sha256:cacb3c674f63d7f261c4fed403f59ce6e7d4c869c3748e301c98b2b9f17f7786
 ```
 
@@ -131,13 +151,13 @@ kubectl get nodes -o wide
 ```
 
 ```output
-NAME              STATUS   ROLES           AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION       CONTAINER-RUNTIME
-kubeadm-cp-01     Ready    control-plane   2m26s   v1.30.0   10.0.70.70    <none>        Ubuntu 22.04.4 LTS   5.15.0-105-generic   cri-o://1.30.0
-kubeadm-cp-02     Ready    control-plane   68s     v1.30.0   10.0.70.78    <none>        Ubuntu 22.04.4 LTS   5.15.0-105-generic   cri-o://1.30.0
-kubeadm-cp-03     Ready    control-plane   64s     v1.30.0   10.0.70.79    <none>        Ubuntu 22.04.4 LTS   5.15.0-105-generic   cri-o://1.30.0
-kubeadm-node-01   Ready    <none>          53s     v1.30.0   10.0.70.71    <none>        Ubuntu 22.04.4 LTS   5.15.0-105-generic   cri-o://1.30.0
-kubeadm-node-02   Ready    <none>          27s     v1.30.0   10.0.70.77    <none>        Ubuntu 22.04.4 LTS   5.15.0-105-generic   cri-o://1.30.0
-kubeadm-node-03   Ready    <none>          37s     v1.30.0   10.0.70.74    <none>        Ubuntu 22.04.4 LTS   5.15.0-105-generic   cri-o://1.30.0
+NAME              STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE           KERNEL-VERSION     CONTAINER-RUNTIME
+kubeadm-cp-01     Ready    control-plane   46m   v1.30.0   10.0.70.70    <none>        Ubuntu 24.04 LTS   6.8.0-31-generic   cri-o://1.31.0
+kubeadm-cp-02     Ready    control-plane   45m   v1.30.0   10.0.70.78    <none>        Ubuntu 24.04 LTS   6.8.0-31-generic   cri-o://1.31.0
+kubeadm-cp-03     Ready    control-plane   45m   v1.30.0   10.0.70.79    <none>        Ubuntu 24.04 LTS   6.8.0-31-generic   cri-o://1.31.0
+kubeadm-node-01   Ready    <none>          45m   v1.30.0   10.0.70.71    <none>        Ubuntu 24.04 LTS   6.8.0-31-generic   cri-o://1.31.0
+kubeadm-node-02   Ready    <none>          45m   v1.30.0   10.0.70.77    <none>        Ubuntu 24.04 LTS   6.8.0-31-generic   cri-o://1.31.0
+kubeadm-node-03   Ready    <none>          45m   v1.30.0   10.0.70.74    <none>        Ubuntu 24.04 LTS   6.8.0-31-generic   cri-o://1.31.0
 ```
 
 ## Настройка CNI
@@ -145,33 +165,121 @@ kubeadm-node-03   Ready    <none>          37s     v1.30.0   10.0.70.74    <none
 **CNI (Container Network Interface)** - это спецификация, которая определяет, как контейнеры в сети взаимодействуют друг с другом и с внешним миром.
 Она позволяет плагинам сети в Kubernetes управлять сетевыми настройками контейнеров.
 
-Мы установим простой плагин **Flannel**
+### Cilium
 
-**Flannel** - это один из плагинов сети для Kubernetes, который обеспечивает сетевую подсистему для контейнеров.
-Он позволяет контейнерам в кластере общаться друг с другом и с внешним миром, обеспечивая сетевую изоляцию и маршрутизацию.
+**Cilium** - это проект с открытым исходным кодом для обеспечения сетевого взаимодействия, безопасности и наблюдаемости для облачных сред,
+таких как кластеры **Kubernetes** и другие платформы для оркестровки контейнеров.
 
-Настраиваем **Flannel**:
+В основе **Cilium** лежит новая технология ядра **Linux** под названием **eBPF**,
+которая позволяет динамически вставлять в ядро Linux мощную логику управления безопасностью, видимостью и сетями.
+**eBPF** используется для обеспечения высокопроизводительных сетей, мультикластерных и мультиоблачных возможностей,
+расширенной балансировки нагрузки, прозрачного шифрования, широких возможностей сетевой безопасности, прозрачной наблюдаемости и многого другого.
+
+Есть несколько вариантов установки **Cilium**
+
+#### **Cilium CLI**
+
+Установите последнюю версию **Cilium CLI**. **Cilium CLI** можно использовать для установки **Cilium**, проверки состояния установки **Cilium**,
+а также для включения/выключения различных функций (например, кластерной сетки, Hubble).
 
 ```sh
-kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+brew install cilium-cli
 ```
 
-Проверяем
+Установите Cilium в кластер Kubernetes, на который указывает ваш текущий контекст kubectl:
 
 ```sh
-kubectl get pods -o wide -n kube-flannel
+cilium install --version 1.16.0
 ```
 
-Должны увидеть, что-то подобное
+#### **Helm Chart**
+
+Установка Cilium на кластер без kube-proxy
+
+```sh
+helm upgrade cilium cilium/cilium --version 1.16.0 \
+    --namespace kube-system \
+    --install \
+    --values cilium/values.yaml
+```
+
+После развертывания **Cilium** с помощью приведенного выше руководства мы можем сначала убедиться, что агент **Cilium** работает в нужном режиме:
+
+```sh
+kubectl -n kube-system exec ds/cilium -- cilium-dbg status | grep KubeProxyReplacement
+```
+
+Для получения подробной информации используйте --verbose:
+
+```sh
+kubectl -n kube-system exec ds/cilium -- cilium-dbg status --verbose
+```
 
 ```output
-NAME                    READY   STATUS    RESTARTS   AGE   IP           NODE              NOMINATED NODE   READINESS GATES
-kube-flannel-ds-6hm2g   1/1     Running   0          26s   10.0.70.71   kubeadm-node-01   <none>           <none>
-kube-flannel-ds-8fzzw   1/1     Running   0          26s   10.0.70.74   kubeadm-node-03   <none>           <none>
-kube-flannel-ds-9hrcj   1/1     Running   0          26s   10.0.70.78   kubeadm-cp-02     <none>           <none>
-kube-flannel-ds-gm24r   1/1     Running   0          26s   10.0.70.70   kubeadm-cp-01     <none>           <none>
-kube-flannel-ds-rd7jr   1/1     Running   0          26s   10.0.70.77   kubeadm-node-02   <none>           <none>
-kube-flannel-ds-rjsl9   1/1     Running   0          26s   10.0.70.79   kubeadm-cp-03     <none>           <none>
+KubeProxyReplacement Details:
+  Status:                 True
+  Socket LB:              Enabled
+  Socket LB Tracing:      Enabled
+  Socket LB Coverage:     Full
+  Devices:                eth0   10.0.75.83 fe80::be24:11ff:fee9:819e (Direct Routing)
+  Mode:                   SNAT
+  Backend Selection:      Random
+  Session Affinity:       Enabled
+  Graceful Termination:   Enabled
+  NAT46/64 Support:       Disabled
+  XDP Acceleration:       Disabled
+  Services:
+  - ClusterIP:      Enabled
+  - NodePort:       Enabled (Range: 30000-32767)
+  - LoadBalancer:   Enabled
+  - externalIPs:    Enabled
+  - HostPort:       Enabled
+```
+
+Больше информации о работе без **kube-proxy** в [официальной документации](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/).
+
+Проверяем статус установки
+
+```sh
+cilium status --wait
+```
+
+Мы должны увидеть что-то подобное
+
+```output
+    /¯¯\
+ /¯¯\__/¯¯\    Cilium:             OK
+ \__/¯¯\__/    Operator:           OK
+ /¯¯\__/¯¯\    Envoy DaemonSet:    disabled (using embedded mode)
+ \__/¯¯\__/    Hubble Relay:       disabled
+    \__/       ClusterMesh:        disabled
+
+DaemonSet              cilium             Desired: 6, Ready: 6/6, Available: 6/6
+Deployment             cilium-operator    Desired: 2, Ready: 2/2, Available: 2/2
+Containers:            cilium             Running: 6
+                       cilium-operator    Running: 2
+Cluster Pods:          2/2 managed by Cilium
+Helm chart version:
+Image versions         cilium             quay.io/cilium/cilium:v1.15.6@sha256:6aa840986a3a9722cd967ef63248d675a87add7e1704740902d5d3162f0c0def: 6
+                       cilium-operator    quay.io/cilium/operator-generic:v1.15.6@sha256:5789f0935eef96ad571e4f5565a8800d3a8fbb05265cf6909300cd82fd513c3d: 2
+```
+
+Выполните следующую команду, чтобы убедиться, что ваш кластер имеет правильное сетевое подключение (опционально):
+
+```sh
+cilium connectivity test
+```
+
+Пример вывода
+
+```output
+✅ [cilium-test] All 52 tests (600 actions) successful, 28 tests skipped, 0 scenarios skipped.
+```
+
+Можно удалить неймспейс **cilium-test**
+
+```sh
+kubectl delete namespaces cilium-test
 ```
 
 ## Установка тестового приложения
@@ -185,7 +293,8 @@ helm upgrade \
   --create-namespace \
   kube-prometheus-stack \
   prometheus-community/kube-prometheus-stack \
-  --version 58.2.2
+  --values ./kube-prometheus-stack/values.yaml  \
+  --version 61.3.2
 ```
 
 Проверяем, что все запустилось
@@ -226,6 +335,8 @@ kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 8000:80
 **CSI (Container Storage Interface)** - это спецификация, которая позволяет контейнерам в **Kubernetes** взаимодействовать с различными хранилищами данных,
 такими как блочные и файловые системы, через стандартизированный интерфейс. Это позволяет управлять хранилищем данных более гибко и эффективно в среде контейнеров.
 
+### **Longhorn**
+
 Для организации системы хранения в кластере, мы будем использовать **[Longhorn](https://longhorn.io/)**.
 
 **Longhorn** - это легкая, надежная и мощная система хранения распределенных блоков для **Kubernetes**.
@@ -234,7 +345,7 @@ kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 8000:80
 **Longhorn** создает выделенный контроллер хранения для каждого тома блочного устройства и синхронно реплицирует том на несколько реплик,
 хранящихся на нескольких узлах. Контроллер хранилища и реплики сами оркеструются с помощью **Kubernetes**.
 
-### Характеристики
+#### Характеристики
 
 - **Распределенное блочное хранилище** корпоративного класса без единой точки отказа
 - **Инкрементный снимок** блочного хранилища
@@ -243,32 +354,32 @@ kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 8000:80
 - **Автоматизированное обновление без сбоев**. Вы можете обновить весь стек программного обеспечения **Longhorn**, не нарушая работу томов хранения.
 - Интуитивно понятная приборная панель с **графическим интерфейсом**
 
-### Пререквизиты
+#### Пререквизиты
 
 - Кластер Kubernetes: Убедитесь, что каждый узел соответствует требованиям к установке.
 - Ваша рабочая станция: Установите Helm версии 3.0 или более поздней.
 
-### Установка Longhorn
+#### Установка Longhorn
 
 Примечание:
 
 - Начальные настройки для **Longhorn** можно найти в пользовательских опциях **Helm** или отредактировав файл конфигурации развертывания.
-- Для **Kubernetes** < v1.25, если в вашем кластере все еще используется контроллер допуска Pod Security Policy, установите значение helm enablePSP в true,
-чтобы установить ресурс longhorn-psp PodSecurityPolicy, который позволит запускать привилегированные поды **Longhorn**.
+- Для **Kubernetes** \< v1.25, если в вашем кластере все еще используется контроллер допуска Pod Security Policy, установите значение helm enablePSP в true,
+  чтобы установить ресурс longhorn-psp PodSecurityPolicy, который позволит запускать привилегированные поды **Longhorn**.
 
-### Требования к установке
+#### Требования к установке
 
 Каждый узел в кластере **Kubernetes**, на котором установлен **Longhorn**, должен отвечать следующим требованиям:
 
 - Контейнерная среда выполнения, совместимая с Kubernetes (Docker v1.13+, containerd v1.3.7+ и т. д.)
 - Kubernetes >= v1.21
 - Установлен open-iscsi, и на всех узлах запущен демон iscsid.
-Это необходимо, поскольку Longhorn полагается на iscsiadm на узле для предоставления постоянных томов Kubernetes. Помощь в установке open-iscsi см. в [этом разделе](https://longhorn.io/docs/1.6.1/deploy/install/#installing-open-iscsi).
+  Это необходимо, поскольку Longhorn полагается на iscsiadm на узле для предоставления постоянных томов Kubernetes. Помощь в установке open-iscsi см. в [этом разделе](https://longhorn.io/docs/1.6.2/deploy/install/#installing-open-iscsi).
 - Поддержка RWX требует, чтобы на каждом узле был установлен клиент NFSv4.
-        Об установке клиента NFSv4 читайте в [этом разделе](https://longhorn.io/docs/1.6.1/deploy/install/#installing-nfsv4-client).
+  Об установке клиента NFSv4 читайте в [этом разделе](https://longhorn.io/docs/1.6.2/deploy/install/#installing-nfsv4-client).
 - Файловая система узла поддерживает функцию расширения файлов для хранения данных. В настоящее время мы поддерживаем:
-        ext4
-        XFS
+  ext4
+  XFS
 - Должны быть установлены bash, curl, findmnt, grep, awk, blkid, lsblk.
 - Распространение монтирования должно быть включено.
 
@@ -280,72 +391,72 @@ kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 8000:80
 
 1. Добавьте репозиторий Longhorn Helm:
 
-    ```sh
-    helm repo add longhorn https://charts.longhorn.io
-    ```
+   ```sh
+   helm repo add longhorn https://charts.longhorn.io
+   ```
 
-2. Получите список последних чартов из репозитория:
+1. Получите список последних чартов из репозитория:
 
-    ```sh
-    helm repo update
-    ```
+   ```sh
+   helm repo update
+   ```
 
-3. Установите Longhorn в пространстве имен longhorn-system.
+1. Установите Longhorn в пространстве имен longhorn-system.
 
-    ```sh
-    helm upgrade \
-      --install \
-      longhorn longhorn/longhorn \
-      --namespace longhorn-system \
-      --create-namespace \
-      --version 1.6.1
-    ```
+   ```sh
+   helm upgrade \
+     --install \
+     longhorn longhorn/longhorn \
+     --namespace longhorn-system \
+     --create-namespace \
+     --version 1.6.2
+   ```
 
-4. Чтобы убедиться, что развертывание прошло успешно, выполните команду:
+1. Чтобы убедиться, что развертывание прошло успешно, выполните команду:
 
-    ```sh
-    kubectl -n longhorn-system get pod
-    ```
+   ```sh
+   kubectl -n longhorn-system get pod
+   ```
 
-    Результат должен выглядеть следующим образом:
+   Результат должен выглядеть следующим образом:
 
-    ```output
-    NAME                                                READY   STATUS    RESTARTS   AGE
-    csi-attacher-799967d9c-nx4f9                        1/1     Running   0          3m10s
-    csi-attacher-799967d9c-vsz7g                        1/1     Running   0          3m10s
-    csi-attacher-799967d9c-zh6vq                        1/1     Running   0          3m10s
-    csi-provisioner-58f97759c-676jf                     1/1     Running   0          3m10s
-    csi-provisioner-58f97759c-fxsb5                     1/1     Running   0          3m10s
-    csi-provisioner-58f97759c-krfs2                     1/1     Running   0          3m10s
-    csi-resizer-6c9b8598f4-dzxwp                        1/1     Running   0          3m10s
-    csi-resizer-6c9b8598f4-kkfn4                        1/1     Running   0          3m10s
-    csi-resizer-6c9b8598f4-wq47f                        1/1     Running   0          3m10s
-    csi-snapshotter-5c5f9b754d-4pdbg                    1/1     Running   0          3m10s
-    csi-snapshotter-5c5f9b754d-7n7wf                    1/1     Running   0          3m10s
-    csi-snapshotter-5c5f9b754d-q4rzx                    1/1     Running   0          3m10s
-    engine-image-ei-5cefaf2b-8j4j9                      1/1     Running   0          3m14s
-    engine-image-ei-5cefaf2b-94g2f                      1/1     Running   0          3m14s
-    engine-image-ei-5cefaf2b-g5bg5                      1/1     Running   0          3m14s
-    instance-manager-3af1ba7167264c2020df4d36d77d3905   1/1     Running   0          3m14s
-    instance-manager-8452580cb8e2bc9ad134bb6a1c2806cc   1/1     Running   0          3m12s
-    instance-manager-a006e8fdef719ff0b5aee753abbe1dd8   1/1     Running   0          3m14s
-    longhorn-csi-plugin-bswvc                           3/3     Running   0          3m10s
-    longhorn-csi-plugin-fmlrd                           3/3     Running   0          3m10s
-    longhorn-csi-plugin-tpnqm                           3/3     Running   0          3m10s
-    longhorn-driver-deployer-68b5879955-7tkrs           1/1     Running   0          3m31s
-    longhorn-manager-5psrc                              1/1     Running   0          3m31s
-    longhorn-manager-5qjbd                              1/1     Running   0          3m31s
-    longhorn-manager-rwzbb                              1/1     Running   0          3m31s
-    longhorn-ui-9ccf5c989-bxdv2                         1/1     Running   0          3m31s
-    longhorn-ui-9ccf5c989-dsvz6                         1/1     Running   0          3m31s
-    ```
+   ```output
+   NAME                                                READY   STATUS    RESTARTS   AGE
+   csi-attacher-799967d9c-nx4f9                        1/1     Running   0          3m10s
+   csi-attacher-799967d9c-vsz7g                        1/1     Running   0          3m10s
+   csi-attacher-799967d9c-zh6vq                        1/1     Running   0          3m10s
+   csi-provisioner-58f97759c-676jf                     1/1     Running   0          3m10s
+   csi-provisioner-58f97759c-fxsb5                     1/1     Running   0          3m10s
+   csi-provisioner-58f97759c-krfs2                     1/1     Running   0          3m10s
+   csi-resizer-6c9b8598f4-dzxwp                        1/1     Running   0          3m10s
+   csi-resizer-6c9b8598f4-kkfn4                        1/1     Running   0          3m10s
+   csi-resizer-6c9b8598f4-wq47f                        1/1     Running   0          3m10s
+   csi-snapshotter-5c5f9b754d-4pdbg                    1/1     Running   0          3m10s
+   csi-snapshotter-5c5f9b754d-7n7wf                    1/1     Running   0          3m10s
+   csi-snapshotter-5c5f9b754d-q4rzx                    1/1     Running   0          3m10s
+   engine-image-ei-5cefaf2b-8j4j9                      1/1     Running   0          3m14s
+   engine-image-ei-5cefaf2b-94g2f                      1/1     Running   0          3m14s
+   engine-image-ei-5cefaf2b-g5bg5                      1/1     Running   0          3m14s
+   instance-manager-3af1ba7167264c2020df4d36d77d3905   1/1     Running   0          3m14s
+   instance-manager-8452580cb8e2bc9ad134bb6a1c2806cc   1/1     Running   0          3m12s
+   instance-manager-a006e8fdef719ff0b5aee753abbe1dd8   1/1     Running   0          3m14s
+   longhorn-csi-plugin-bswvc                           3/3     Running   0          3m10s
+   longhorn-csi-plugin-fmlrd                           3/3     Running   0          3m10s
+   longhorn-csi-plugin-tpnqm                           3/3     Running   0          3m10s
+   longhorn-driver-deployer-68b5879955-7tkrs           1/1     Running   0          3m31s
+   longhorn-manager-5psrc                              1/1     Running   0          3m31s
+   longhorn-manager-5qjbd                              1/1     Running   0          3m31s
+   longhorn-manager-rwzbb                              1/1     Running   0          3m31s
+   longhorn-ui-9ccf5c989-bxdv2                         1/1     Running   0          3m31s
+   longhorn-ui-9ccf5c989-dsvz6                         1/1     Running   0          3m31s
+   ```
 
-5. Чтобы включить доступ к пользовательскому интерфейсу Longhorn, необходимо настроить контроллер Ingress.
+1. Чтобы включить доступ к пользовательскому интерфейсу Longhorn, необходимо настроить контроллер Ingress.
 
-    По умолчанию аутентификация в пользовательском интерфейсе Longhorn не включена.
-    Информацию о создании контроллера NGINX Ingress с базовой аутентификацией см. в [этом разделе](https://longhorn.io/docs/1.6.1/deploy/accessing-the-ui/longhorn-ingress).
+   По умолчанию аутентификация в пользовательском интерфейсе Longhorn не включена.
+   Информацию о создании контроллера NGINX Ingress с базовой аутентификацией см. в [этом разделе](https://longhorn.io/docs/1.6.2/deploy/accessing-the-ui/longhorn-ingress).
 
-6. Войдите в пользовательский интерфейс Longhorn, выполнив [следующие действия](https://longhorn.io/docs/1.6.1/deploy/accessing-the-ui).
+1. Войдите в пользовательский интерфейс Longhorn, выполнив [следующие действия](https://longhorn.io/docs/1.6.2/deploy/accessing-the-ui).
 
 Посмотреть на веб интерфейс можно так:
 
@@ -382,7 +493,20 @@ helm upgrade \
   --install \
   --namespace traefik \
   --create-namespace \
-  traefik traefik/traefik
+  traefik traefik/traefik \
+  --values traefik/values.yaml
+```
+
+```sh
+helm upgrade \
+  --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx \
+  --create-namespace \
+  --set controller.kind=DaemonSet \
+  --set controller.hostNetwork=false \
+  --set controller.hostPort.enabled=false \
+  --set controller.service.loadBalancerIP=10.0.70.199
 ```
 
 ### Проброс дашборда Traefik
@@ -404,16 +528,16 @@ kubectl get nodes -o wide
 Эти команды выполняют следующие действия:
 
 - kubectl drain - этот шаг убеждается, что все поды, которые могут быть перезапущены в другом месте, были перезапущены.
-Он также удаляет все пустые директории, которые были созданы подами на узле,
-и удаляет все поды, которые не могут быть перезапущены в другом месте (например, поды, которые имеют локальные данные).
+  Он также удаляет все пустые директории, которые были созданы подами на узле,
+  и удаляет все поды, которые не могут быть перезапущены в другом месте (например, поды, которые имеют локальные данные).
 
 ```sh
 kubectl drain kubeadm-node-01 --delete-local-data --force --ignore-daemonsets
 ```
 
 - kubectl delete node - этот шаг удаляет узел из кластера.
-Обратите внимание, что эти команды могут привести к потере данных,
-поэтому убедитесь, что вы понимаете, что делаете, и что у вас есть резервное копирование данных, если это необходимо.
+  Обратите внимание, что эти команды могут привести к потере данных,
+  поэтому убедитесь, что вы понимаете, что делаете, и что у вас есть резервное копирование данных, если это необходимо.
 
 ```sh
 kubectl delete node kubeadm-node-01
@@ -437,70 +561,4 @@ kubeadm token list
 
 ```sh
 kubeadm token create --print-join-command
-```
-
-## Тестирование кластера
-
-Отчет **sonobuoy**
-
-```txt
-Plugin: e2e
-Status: failed
-Total: 7201
-Passed: 384
-Failed: 20
-Skipped: 6797
-
-Failed tests:
- [sig-network] DNS should provide DNS for pods for Subdomain [Conformance]
- [sig-network] Services should be able to change the type from ExternalName to ClusterIP [Conformance]
- [sig-network] Services should be able to switch session affinity for service with type clusterIP [LinuxOnly] [Conformance]
- [sig-cli] Kubectl client Guestbook application should create and stop a working application [Conformance]
- [sig-network] Services should be able to switch session affinity for NodePort service [LinuxOnly] [Conformance]
- [sig-network] Services should serve multiport endpoints from pods [Conformance]
- [sig-network] Services should have session affinity work for NodePort service [LinuxOnly] [Conformance]
- [sig-architecture] Conformance Tests should have at least two untainted nodes [Conformance]
- [sig-network] DNS should provide DNS for services [Conformance]
- [sig-network] Services should be able to change the type from NodePort to ExternalName [Conformance]
- [sig-network] DNS should resolve DNS of partial qualified names for services [LinuxOnly] [Conformance]
- [sig-network] Services should be able to change the type from ExternalName to NodePort [Conformance]
- [sig-network] Services should serve a basic endpoint from pods [Conformance]
- [sig-apps] Daemon set [Serial] should rollback without unnecessary restarts [Conformance]
- [sig-network] DNS should provide DNS for ExternalName services [Conformance]
- [sig-network] DNS should provide DNS for the cluster [Conformance]
- [sig-network] Services should be able to create a functioning NodePort service [Conformance]
- [sig-network] Services should be able to change the type from ClusterIP to ExternalName [Conformance]
- [sig-auth] ServiceAccounts ServiceAccountIssuerDiscovery should support OIDC discovery of service account issuer [Conformance]
- [sig-network] Services should have session affinity work for service with type clusterIP [LinuxOnly] [Conformance]
-
-Plugin: systemd-logs
-Status: passed
-Total: 2
-Passed: 2
-Failed: 0
-Skipped: 0
-
-Run Details:
-API Server version: v1.30.0
-Node health: 2/2 (100%)
-Pods health: 13/14 (92%)
-Details for failed pods:
-sonobuoy/sonobuoy-e2e-job-c23b74c9b2004efd Ready:False: :
-Errors detected in files:
-Warnings:
-754 podlogs/kube-system/kube-controller-manager-kubeadm-cp-01/logs/kube-controller-manager.txt
- 90 podlogs/kube-system/kube-apiserver-kubeadm-cp-01/logs/kube-apiserver.txt
- 29 podlogs/kube-system/kube-scheduler-kubeadm-cp-01/logs/kube-scheduler.txt
-  7 podlogs/sonobuoy/sonobuoy-e2e-job-c23b74c9b2004efd/logs/e2e.txt
-  3 podlogs/kube-system/etcd-kubeadm-cp-01/logs/etcd.txt
-  1 podlogs/sonobuoy/sonobuoy/logs/kube-sonobuoy.txt
-Errors:
-6268 podlogs/sonobuoy/sonobuoy-e2e-job-c23b74c9b2004efd/logs/e2e.txt
-1742 podlogs/kube-system/kube-controller-manager-kubeadm-cp-01/logs/kube-controller-manager.txt
- 350 podlogs/kube-system/kube-apiserver-kubeadm-cp-01/logs/kube-apiserver.txt
-  63 podlogs/kube-system/kube-scheduler-kubeadm-cp-01/logs/kube-scheduler.txt
-   9 podlogs/kube-system/coredns-7db6d8ff4d-lkwk9/logs/coredns.txt
-   9 podlogs/kube-system/coredns-7db6d8ff4d-bdvht/logs/coredns.txt
-   8 podlogs/kube-system/kube-proxy-4g6fl/logs/kube-proxy.txt
-   8 podlogs/kube-system/kube-proxy-p5vr5/logs/kube-proxy.txt
 ```

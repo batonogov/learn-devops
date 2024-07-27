@@ -1,9 +1,9 @@
 # tasks file for haproxy_static_pods
 - name: Создать директории /etc/kubernetes/manifests и /etc/keepalived
   ansible.builtin.file:
-    path: '{{ item }}'
+    path: "{{ item }}"
     state: directory
-    mode: '755'
+    mode: "755"
   with_items:
     - /etc/kubernetes/manifests
     - /etc/keepalived
@@ -19,22 +19,22 @@
   ansible.builtin.copy:
     src: check_apiserver.sh
     dest: /etc/keepalived/check_apiserver.sh
-    mode: '644'
+    mode: "644"
 
 - name: Наливаю haproxy.cfg
   ansible.builtin.copy:
     src: haproxy.cfg
     dest: /etc/haproxy/haproxy.cfg
-    mode: '644'
+    mode: "644"
 
 - name: Наливаю keepalived static pods manifest
   ansible.builtin.copy:
     src: keepalived.yaml
     dest: /etc/kubernetes/manifests/keepalived.yaml
-    mode: '644'
+    mode: "644"
 
 - name: Наливаю haproxy static pods manifest
   ansible.builtin.copy:
     src: haproxy.yaml
     dest: /etc/kubernetes/manifests/haproxy.yaml
-    mode: '644'
+    mode: "644"

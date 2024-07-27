@@ -7,3 +7,8 @@ variable "virtual_environment_api_token" {
   type        = string
   description = "The api roken the Proxmox Virtual Environment API (example: root@pam!for-terraform-provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)"
 }
+
+variable "ssh_public_key" {
+  type        = string
+  description = "SSH Puclic key for VMs (example: ssh-rsa ...)"
+}

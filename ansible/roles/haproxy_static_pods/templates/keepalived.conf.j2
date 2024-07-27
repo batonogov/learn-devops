@@ -21,7 +21,7 @@ vrrp_instance VI_1 {
         auth_pass {{ lookup('password', 'secrets/kubeadm/keepalived/auth_pass length=64') }}
     }
     virtual_ipaddress {
-        10.0.70.85/24
+        10.0.75.80/24
     }
     track_script {
         check_apiserver
