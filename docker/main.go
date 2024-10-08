@@ -17,7 +17,7 @@ func main() {
 		}
 
 		// Отправляем имя хоста в ответ
-		fmt.Fprintf(w, "Hostname Hostname: %s\n", hostname)
+		fmt.Fprintf(w, "Имя узла: %s\n", hostname)
 	})
 
 	// Запуск веб-сервера на порту 8080
