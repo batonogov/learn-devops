@@ -25,11 +25,9 @@ services:
 
   # NGINX-прокси
   nginx-proxy:
-    image: nginxproxy/nginx-proxy:1.6.0-alpine
-    expose:
-      - 80
+    image: nginxproxy/nginx-proxy:1.6.2-alpine
     ports:
-      - 80:80              # Проксируем порт 80 на хосте
+      - 8080:8080 # Проксируем порт 8080 на хосте
     healthcheck:
       # Периодичность проверки состояния (5 секунд)
       interval: 5s
@@ -40,7 +38,7 @@ services:
       # Время ожидания перед началом проверок (3 секунды)
       start_period: 3s
       # Команда для выполнения теста
-      test: curl -f http://localhost/ || exit 1
+      test: curl -f http://localhost:8080/ || exit 1
     volumes:
       # Монтируем сокет Docker
       - /var/run/docker.sock:/tmp/docker.sock:ro

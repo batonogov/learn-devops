@@ -11,7 +11,9 @@ upstream {{ $host }} {
 
 # конфигурация веб-сервера
 server {
-    listen 80;
+    listen 8080;
+
+    server_tokens off;
 
     location / {
         proxy_pass http://{{ $host }};

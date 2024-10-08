@@ -1,5 +1,5 @@
 # Используем официальный образ Golang
-FROM golang:1.22.5-alpine AS builder
+FROM golang:1.23.2-alpine AS builder
 # Устанавливаем рабочую директорию
 WORKDIR /build
 # Копируем исходный код приложения в контейнер
@@ -8,7 +8,7 @@ COPY ./ ./
 RUN CGO_ENABLED=0 go build main.go
 
 # Отдельный этап сборки для уменьшения размера образа
-FROM alpine:3.20.1 AS runner
+FROM alpine:3.20.3 AS runner
 # Определяем аргумент для имени пользователя
 ARG USERNAME=appuser
 ARG GROUPNAME=appgroup
