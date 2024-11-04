@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -19,12 +19,12 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ansible-community/ansible-lint.git
-    rev: v24.5.0
+    rev: v24.9.2
     hooks:
       - id: ansible-lint
 
   - repo: https://github.com/tofuutils/pre-commit-opentofu
-    rev: v1.0.2
+    rev: v2.1.0
     hooks:
       - id: tofu_fmt
       - id: tofu_validate
