@@ -68,7 +68,7 @@ pre-commit --version должен показать, какую версию вы
 
 ```console
 pre-commit --version
-pre-commit 4.0.0
+pre-commit 4.0.1
 ```
 
 Устанавливаем **pre-commit**

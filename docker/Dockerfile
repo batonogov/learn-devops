@@ -31,9 +31,9 @@ RUN CGO_ENABLED=0 go build main.go
 # Отдельный этап сборки для уменьшения размера образа
 FROM scratch
 # Создаем пользователя
-USER 100
+USER 100:100
 # Копируем скомпилированное приложение из предыдущего этапа
-COPY --from=builder --chown=100 /build/main /
+COPY --from=builder --chown=100:100 /build/main /
 # Копируем curl для работы HEALTHCHECK
 COPY --from=ghcr.io/tarampampam/curl:8.10.1 /bin/curl /bin/curl
 # Запускаем healthcheck, проверяющий доступность веб-сервера на порту 8080

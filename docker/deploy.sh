@@ -27,7 +27,8 @@ docker compose \
     --build \
     --remove-orphans \
     --scale web-${NEW}=3 \
-    --wait
+    --wait \
+    --quiet-pull
 
 # Эта строка выводит сообщение о том, какие сервисы останавливаются в данный момент (значение переменной OLD).
 echo Останавливаю сервисы ${OLD}
