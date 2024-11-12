@@ -9,3 +9,5 @@ skip_list:
 exclude_paths:
   - ansible/roles/haproxy_static_pods/files/haproxy.yaml
   - ansible/roles/haproxy_static_pods/files/keepalived.yaml
+  - talos/
+  - .markdownlint.yml
