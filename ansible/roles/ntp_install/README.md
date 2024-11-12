@@ -16,7 +16,9 @@ Role Variables
 Dependencies
 ------------
 
-Для настройки часового пояса используется роль [community.general.timezone](https://docs.ansible.com/ansible/latest/collections/community/general/timezone_module.html), в качестве параметра принимается строка с нужным часовым поясом, например **Europe/Moscow**.
+Для настройки часового пояса используется роль
+[community.general.timezone](https://docs.ansible.com/ansible/latest/collections/community/general/timezone_module.html),
+в качестве параметра принимается строка с нужным часовым поясом, например **Europe/Moscow**.
 
 Example Playbook
 ----------------
@@ -33,4 +35,4 @@ MIT
 Author Information
 ------------------
 
-Федор Батоногов f.batonogov@yandex.ru
+Федор Батоногов <f.batonogov@yandex.ru>

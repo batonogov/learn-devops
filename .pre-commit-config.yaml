@@ -22,9 +22,17 @@ repos:
     rev: v24.9.2
     hooks:
       - id: ansible-lint
+        exclude: ^talos/
 
   - repo: https://github.com/tofuutils/pre-commit-opentofu
     rev: v2.1.0
     hooks:
       - id: tofu_fmt
       - id: tofu_validate
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.42.0
+    hooks:
+      - id: markdownlint
+        args: ["--fix"]
+        files: \.md$
