@@ -36,7 +36,7 @@ services:
       # Количество попыток в случае неудачной проверки (5 попыток)
       retries: 5
       # Время ожидания перед началом проверок (3 секунды)
-      start_period: 3s
+      start_period: 5s
       # Команда для выполнения теста
       test: curl -f http://localhost:8080/ || exit 1
     volumes:
