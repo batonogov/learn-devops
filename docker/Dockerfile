@@ -40,4 +40,4 @@ COPY --from=ghcr.io/tarampampam/curl:8.10.1 /bin/curl /bin/curl
 HEALTHCHECK --interval=5s --timeout=5s --start-period=3s --retries=3 \
             CMD [ "curl", "--fail", "http://127.0.0.1:8080/" ]
 # Запускаем приложение при старте контейнера
-CMD ["/main"]
+ENTRYPOINT ["/main"]
