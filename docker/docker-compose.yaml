@@ -25,7 +25,7 @@ services:
 
   # NGINX-прокси
   nginx-proxy:
-    image: nginxproxy/nginx-proxy:1.6.3-alpine
+    image: nginxproxy/nginx-proxy:1.6.4-alpine
     ports:
       - 8080:8080 # Проксируем порт 8080 на хосте
     healthcheck:
