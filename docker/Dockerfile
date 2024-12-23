@@ -1,5 +1,5 @@
 # Используем официальный образ Golang
-FROM golang:1.23.3-alpine AS builder
+FROM golang:1.23.4-alpine AS builder
 # Устанавливаем рабочую директорию
 WORKDIR /build
 # Копируем исходный код приложения в контейнер
@@ -38,6 +38,6 @@ COPY --from=builder --chown=100:100 /build/main /
 COPY --from=ghcr.io/tarampampam/curl:8.10.1 /bin/curl /bin/curl
 # Запускаем healthcheck, проверяющий доступность веб-сервера на порту 8080
 HEALTHCHECK --interval=5s --timeout=5s --start-period=3s --retries=3 \
-            CMD [ "curl", "--fail", "http://127.0.0.1:8080/" ]
+    CMD [ "curl", "--fail", "http://127.0.0.1:8080/" ]
 # Запускаем приложение при старте контейнера
 ENTRYPOINT ["/main"]
