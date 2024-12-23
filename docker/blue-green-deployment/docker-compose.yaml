@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"      # Лимитированный доступ к ресурсам CPU
+          cpus: '0.5'      # Лимитированный доступ к ресурсам CPU
           memory: 32M      # Лимит памяти
     restart: always        # Перезапускать сервис при падении
     profiles:
@@ -19,7 +19,8 @@ services:
 
   # Сервис для развертывания приложения с профилем "green"
   web-green:
-    <<: *web               # Используем настройки из сервиса web-blue
+    <<: *web
+                           # Используем настройки из сервиса web-blue
     profiles:
       - green
 
