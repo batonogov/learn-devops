@@ -1,0 +1,40 @@
+# Базовый образ
+FROM python:3.13.1-alpine
+
+# Устанавливаем переменные окружения
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    WORKDIR_PATH="/app" \
+    VENV_PATH="/opt/venv"
+
+# Определяем аргументы для пользователя и группы
+ARG USERNAME=appuser
+ARG GROUPNAME=appgroup
+
+# Создаем пользователя и рабочую директорию
+RUN addgroup --system ${GROUPNAME} \
+    && adduser --system --ingroup ${GROUPNAME} ${USERNAME} \
+    && mkdir -p ${WORKDIR_PATH} ${VENV_PATH} \
+    && chown -R ${USERNAME}:${GROUPNAME} ${WORKDIR_PATH} ${VENV_PATH}
+
+# Устанавливаем рабочую директорию
+WORKDIR ${WORKDIR_PATH}
+
+# Создаем виртуальное окружение и настраиваем PATH
+RUN python -m venv ${VENV_PATH}
+ENV PATH="${VENV_PATH}/bin:$PATH"
+
+# Копируем requirements, устанавливаем зависимости в venv и устанавливаем права
+COPY --chown=${USERNAME}:${GROUPNAME} ./requirements.txt ./requirements.txt
+RUN pip install --no-cache --require-hashes -r ./requirements.txt \
+    && chown -R ${USERNAME}:${GROUPNAME} ${VENV_PATH}
+
+# Копируем остальные файлы приложения
+COPY --chown=${USERNAME}:${GROUPNAME} ./ ./
+
+# Запускаем контейнер от имени нового пользователя
+USER ${USERNAME}:${GROUPNAME}
+
+# Настраиваем команду запуска
+ENTRYPOINT ["uvicorn", "main:app"]
+CMD [ "--host", "0.0.0.0", "--port", "8000" ]
