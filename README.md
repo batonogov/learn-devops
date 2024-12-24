@@ -1,5 +1,10 @@
 # learn-devops
 
+![GitHub stars](https://img.shields.io/github/stars/batonogov/learn-devops?style=flat-square)
+![GitHub forks](https://img.shields.io/github/forks/batonogov/learn-devops?style=flat-square)
+![GitHub issues](https://img.shields.io/github/issues/batonogov/learn-devops?style=flat-square)
+![GitHub license](https://img.shields.io/github/license/batonogov/learn-devops?style=flat-square)
+
 ## Описание
 
 В этом репозитории собраны примеры с [YouTube](https://www.youtube.com/@fedor_batonogov)/[Rutube](https://rutube.ru/channel/31656928) каналов.
