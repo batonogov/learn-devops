@@ -36,13 +36,13 @@ export TALOS_CONTROL_PLANE_IP=192.168.1.48
 Вот так можно посмотреть список дисков на узле:
 
 ```sh
-talosctl -n $TALOS_CONTROL_PLANE_IP get disks --insecure
+talosctl -n $TALOS_CONTROL_PLANE_IP disks --insecure
 ```
 
 Генерируем конфиг
 
 ```sh
-talosctl gen config --kubernetes-version 1.32.0 talos https://$TALOS_CONTROL_PLANE_IP:6443 --config-patch @patch.yaml
+talosctl gen config --kubernetes-version 1.31.1 talos https://$TALOS_CONTROL_PLANE_IP:6443 --config-patch @patch.yaml
 ```
 
 Применяем конфигурацию
@@ -86,9 +86,16 @@ helm upgrade \
     --install \
     cilium \
     cilium/cilium \
-    --version 1.16.5 \
+    --version 1.16.3 \
     --namespace kube-system \
-    --values cilium.yaml
+    --set ipam.mode=kubernetes \
+    --set kubeProxyReplacement=true \
+    --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
+    --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
+    --set cgroup.autoMount.enabled=false \
+    --set cgroup.hostRoot=/sys/fs/cgroup \
+    --set k8sServiceHost=localhost \
+    --set k8sServicePort=7445
 ```
 
 ## Metrics Server
@@ -103,5 +110,5 @@ helm upgrade \
 ```
 
 ```sh
-talosctl upgrade-k8s --nodes $TALOS_CONTROL_PLANE_IP --to 1.32.1
+talosctl upgrade-k8s --nodes $TALOS_CONTROL_PLANE_IP --to 1.31.2
 ```
