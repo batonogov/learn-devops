@@ -1,0 +1,12 @@
+deployment:
+  kind: DaemonSet
+
+service:
+  labels:
+    color: blue
+  spec:
+    externalTrafficPolicy: Local
+
+additionalArguments:
+  - --serversTransport.insecureSkipVerify=true
+  # - --entrypoints.web.http.redirections.entryPoint.to=:443

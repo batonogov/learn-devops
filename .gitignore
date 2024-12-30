@@ -80,5 +80,5 @@ go.work
 .DS_Store
 ansible/secrets
 main
-talos/{controlplane,worker}.yaml
+talos/{controlplane,worker,secrets,cp*,worker*}.yaml
 talosconfig

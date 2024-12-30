@@ -42,7 +42,7 @@ talosctl -n $TALOS_CONTROL_PLANE_IP get disks --insecure
 Генерируем конфиг
 
 ```sh
-talosctl gen config --kubernetes-version 1.32.0 talos https://$TALOS_CONTROL_PLANE_IP:6443 --config-patch @patch.yaml
+talosctl gen config --kubernetes-version 1.32.0 taloscluster https://$TALOS_CONTROL_PLANE_IP:6443 --config-patch @patch.yaml
 ```
 
 Применяем конфигурацию
@@ -88,7 +88,7 @@ helm upgrade \
     cilium/cilium \
     --version 1.16.5 \
     --namespace kube-system \
-    --values cilium.yaml
+    --values cilium/values.yaml
 ```
 
 ## Metrics Server
@@ -104,4 +104,55 @@ helm upgrade \
 
 ```sh
 talosctl upgrade-k8s --nodes $TALOS_CONTROL_PLANE_IP --to 1.32.1
+```
+
+## Производственные кластеры
+
+Разделение секретов
+
+При создании конфигурационных файлов для кластера Talos Linux рекомендуется начать с генерации пакета секретов,
+который следует сохранить в надежном месте.
+Этот пакет может использоваться для создания машинных или клиентских конфигураций в любое время
+
+```sh
+talosctl gen secrets -o secrets.yaml
+```
+
+Теперь мы можем создать конфигурацию машины для каждого узла:
+
+```sh
+talosctl gen config --with-secrets secrets.yaml my-cluster https://192.168.11.99:6443 --config-patch @patch.yaml
+```
+
+```sh
+talosctl machineconfig patch controlplane.yaml --patch @cp0.patch --output cp0.yaml
+```
+
+```sh
+talosctl apply-config --insecure -n 192.168.11.51 --file ./cp0.yaml
+```
+
+После перезапуска Controls Plane узла необходимо инициализировать etcd:
+
+```sh
+talosctl bootstrap --nodes 192.168.11.100 --endpoints 192.168.11.100 --talosconfig=./talosconfig
+```
+
+Получаем kube config:
+
+```sh
+talosctl kubeconfig ~/.kube/config --nodes 192.168.11.99 --endpoints 192.168.11.99 --talosconfig ./talosconfig
+```
+
+```sh
+talosctl machineconfig patch worker.yaml --patch @worker0.patch --output worker0.yaml
+```
+
+```sh
+helm upgrade \
+  --install \
+  --namespace traefik \
+  --create-namespace \
+  traefik traefik/traefik \
+  --values traefik/values.yaml
 ```
