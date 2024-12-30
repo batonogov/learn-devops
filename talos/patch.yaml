@@ -1,0 +1,14 @@
+machine:
+  install:
+    disk: /dev/nvme0n1
+  time:
+    servers:
+      - 1.ru.pool.ntp.org
+      - 2.ru.pool.ntp.org
+      - 3.ru.pool.ntp.org
+cluster:
+  network:
+    cni:
+      name: none
+  proxy:
+    disabled: true
