@@ -11,6 +11,6 @@ spec:
       - key: node-role.kubernetes.io/control-plane
         operator: DoesNotExist
   interfaces:
-    - ^ens[0-200]+
+    - ^ens[160-161]+
   externalIPs: true
   loadBalancerIPs: true
