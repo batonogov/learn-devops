@@ -121,7 +121,7 @@ talosctl gen secrets -o secrets.yaml
 Теперь мы можем создать конфигурацию машины для каждого узла:
 
 ```sh
-talosctl gen config --with-secrets secrets.yaml my-cluster https://192.168.11.99:6443 --config-patch @patch.yaml
+talosctl gen config --with-secrets secrets.yaml my-cluster https://172.16.61.10:6443 --config-patch @patch.yaml
 ```
 
 ```sh
@@ -129,19 +129,19 @@ talosctl machineconfig patch controlplane.yaml --patch @cp0.patch --output cp0.y
 ```
 
 ```sh
-talosctl apply-config --insecure -n 192.168.11.51 --file ./cp0.yaml
+talosctl apply-config --insecure -n 172.16.61.138 --file ./cp0.yaml
 ```
 
 После перезапуска Controls Plane узла необходимо инициализировать etcd:
 
 ```sh
-talosctl bootstrap --nodes 192.168.11.100 --endpoints 192.168.11.100 --talosconfig=./talosconfig
+talosctl bootstrap --nodes 172.16.61.11 --endpoints 172.16.61.11 --talosconfig=./talosconfig
 ```
 
 Получаем kube config:
 
 ```sh
-talosctl kubeconfig ~/.kube/config --nodes 192.168.11.99 --endpoints 192.168.11.99 --talosconfig ./talosconfig
+talosctl kubeconfig ~/.kube/config --nodes 172.16.61.10 --endpoints 172.16.61.10 --talosconfig ./talosconfig
 ```
 
 ```sh

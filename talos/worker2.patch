@@ -5,7 +5,7 @@ machine:
       - interface: ens160
         dhcp: false
         addresses:
-          - 192.168.11.105/24
+          - 172.16.61.16/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 192.168.11.243
+            gateway: 172.16.61.2

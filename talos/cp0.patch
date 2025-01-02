@@ -5,9 +5,9 @@ machine:
       - interface: ens160
         dhcp: false
         addresses:
-          - 192.168.11.100/24
+          - 172.16.61.11/24
         vip:
-          ip: 192.168.11.99
+          ip: 172.16.61.10
         routes:
           - network: 0.0.0.0/0
-            gateway: 192.168.11.243
+            gateway: 172.16.61.2
