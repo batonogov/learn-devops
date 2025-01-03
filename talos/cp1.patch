@@ -1,0 +1,13 @@
+machine:
+  network:
+    hostname: cp1
+    interfaces:
+      - interface: ens160
+        dhcp: false
+        addresses:
+          - 172.16.61.12/24
+        vip:
+          ip: 172.16.61.10
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 172.16.61.2

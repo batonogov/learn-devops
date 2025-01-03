@@ -79,6 +79,9 @@ go.work
 .vscode
 .DS_Store
 ansible/secrets
-main
-talos/{controlplane,worker}.yaml
-talosconfig
+talos/controlplane.yaml
+talos/worker.yaml
+talos/secrets.yaml
+talos/talosconfig
+talos/cp*.yaml
+talos/worker*.yaml

@@ -1,4 +1,8 @@
 machine:
+  network:
+    nameservers:
+      - 77.88.8.8
+      - 77.88.8.1
   install:
     disk: /dev/nvme0n1
   time:

@@ -1,0 +1,11 @@
+machine:
+  network:
+    hostname: worker1
+    interfaces:
+      - interface: ens160
+        dhcp: false
+        addresses:
+          - 172.16.61.15/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 172.16.61.2
