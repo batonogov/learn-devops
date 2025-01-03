@@ -21,7 +21,7 @@ RUN addgroup --system ${GROUPNAME} \
 WORKDIR ${WORKDIR_PATH}
 
 # Копируем uv чрезвычайно быстрый менеджер пакетов и проектов Python
-COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.5.14 /uv /uvx /bin/
 
 # Создаем виртуальное окружение и настраиваем PATH
 RUN uv venv ${VENV_PATH}
