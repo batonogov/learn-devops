@@ -14,3 +14,6 @@ build:
 build-pip:
 	time docker build --no-cache --file Dockerfile.pip -t pip .
 	docker images
+
+outdated:
+	uv pip list --outdated
