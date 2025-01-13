@@ -9,4 +9,3 @@ service:
 
 additionalArguments:
   - --serversTransport.insecureSkipVerify=true
-  # - --entrypoints.web.http.redirections.entryPoint.to=:443
