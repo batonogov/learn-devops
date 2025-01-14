@@ -83,11 +83,20 @@ talosctl gen config --kubernetes-version 1.31.4 --with-secrets secrets.yaml my-c
 
 ```sh
 talosctl machineconfig patch controlplane.yaml --patch @cp0.patch --output cp0.yaml
+talosctl machineconfig patch controlplane.yaml --patch @cp1.patch --output cp1.yaml
+talosctl machineconfig patch controlplane.yaml --patch @cp2.patch --output cp2.yaml
 talosctl machineconfig patch worker.yaml --patch @worker0.patch --output worker0.yaml
+talosctl machineconfig patch worker.yaml --patch @worker1.patch --output worker1.yaml
+talosctl machineconfig patch worker.yaml --patch @worker2.patch --output worker2.yaml
 ```
 
 ```sh
 talosctl apply-config --insecure -n 172.16.61.144 --file ./cp0.yaml
+talosctl apply-config --insecure -n 172.16.61.145 --file ./cp1.yaml
+talosctl apply-config --insecure -n 172.16.61.146 --file ./cp2.yaml
+talosctl apply-config --insecure -n 172.16.61.147 --file ./worker0.yaml
+talosctl apply-config --insecure -n 172.16.61.149 --file ./worker1.yaml
+talosctl apply-config --insecure -n 172.16.61.148 --file ./worker2.yaml
 ```
 
 После перезапуска Controls Plane узла необходимо инициализировать etcd:
@@ -134,10 +143,6 @@ helm upgrade \
   --set args={--kubelet-insecure-tls}
 ```
 
-```sh
-talosctl upgrade-k8s --nodes $TALOS_CONTROL_PLANE_IP --to 1.32.0
-```
-
 Поднимаем **Traefik Kubernetes Ingress**
 
 ```sh
@@ -147,4 +152,10 @@ helm upgrade \
   --create-namespace \
   traefik traefik/traefik \
   --values traefik/values.yaml
+```
+
+Обновление кластера
+
+```sh
+talosctl --nodes 172.16.61.10 upgrade-k8s --to 1.32.0
 ```
