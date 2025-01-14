@@ -1,5 +1,5 @@
 # Базовый образ
-FROM python:3.13.1-alpine
+FROM python:3.13-alpine
 
 # Устанавливаем переменные окружения
 ENV PYTHONDONTWRITEBYTECODE=1 \
