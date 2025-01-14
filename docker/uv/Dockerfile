@@ -1,5 +1,5 @@
 # Базовый образ
-FROM python:3.13.1-alpine
+FROM python:3.13-alpine
 
 # Устанавливаем переменные окружения
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -21,7 +21,7 @@ RUN addgroup --system ${GROUPNAME} \
 WORKDIR ${WORKDIR_PATH}
 
 # Копируем uv чрезвычайно быстрый менеджер пакетов и проектов Python
-COPY --from=ghcr.io/astral-sh/uv:0.5.14 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.5 /uv /uvx /bin/
 
 # Создаем виртуальное окружение и настраиваем PATH
 RUN uv venv ${VENV_PATH}
