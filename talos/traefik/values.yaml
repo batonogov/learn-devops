@@ -1,0 +1,11 @@
+deployment:
+  kind: DaemonSet
+
+service:
+  labels:
+    color: blue
+  spec:
+    externalTrafficPolicy: Local
+
+additionalArguments:
+  - --serversTransport.insecureSkipVerify=true
