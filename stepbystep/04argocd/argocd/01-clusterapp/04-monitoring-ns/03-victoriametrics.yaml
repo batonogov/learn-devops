@@ -1,0 +1,130 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-clear
+  namespace: monitoring
+data:
+  clear.sh: |
+    #! /bin/bash
+
+    for DIR in `find /victoria-metrics-data/data/small/ -type d | grep -E '^\S.*\/[0-9]{4}_[0-9]{2}\/[0-9].*'`
+    do
+        if [ ! -f $DIR/index.bin ]; then
+            rm -rf  $DIR
+        fi
+    done
+
+    for DIR in `find /victoria-metrics-data/data/big/ -type d | grep -E '^\S.*\/[0-9]{4}_[0-9]{2}\/[0-9].*'`
+    do
+        if [ ! -f $DIR/index.bin ]; then
+            rm -rf $DIR
+        fi
+    done
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: victoriametrics-sys
+  labels:
+    app: victoriametrics-sys
+spec:
+  ports:
+  - port: 8428
+    name: victoria
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: victoriametrics-sys
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: victoriametrics-sys-connect
+  labels:
+    app: victoriametrics-sys
+spec:
+  ports:
+  - port: 8428
+    name: victoria
+    protocol: TCP
+  selector:
+    app: victoriametrics-sys
+    statefulset.kubernetes.io/pod-name: victoriametrics-sys-0
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: victoriametrics-sys
+  labels:
+    app: victoriametrics-sys
+spec:
+  selector:
+    matchLabels:
+      app: victoriametrics-sys
+  serviceName: victoriametrics-sys
+  template:
+    metadata:
+      labels:
+        app: victoriametrics-sys
+    spec:
+      priorityClassName: low-priority
+      initContainers:
+        - name: init-configs
+          image: busybox:1.33.0
+          command: [ 'sh', '/tmp/clear.sh' ]
+          volumeMounts:
+            - name: prepare
+              mountPath: /tmp/
+            - name: data
+              mountPath: /victoria-metrics-data
+      containers:
+        - name: victoriametrics-sys
+          image: victoriametrics/victoria-metrics:v1.57.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - -retentionPeriod=5h
+            - -loggerLevel=INFO
+            - -loggerFormat=json
+            - -selfScrapeInterval=15s
+            - -http.pathPrefix=/vm
+          ports:
+            - containerPort: 8428
+              name: victoria
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /vm/metrics
+              port: victoria
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /vm/metrics
+              port: victoria
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 200m
+              memory: 500Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /victoria-metrics-data
+      volumes:
+        - name: prepare
+          configMap:
+            name: init-clear
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "managed-nfs-storage"
+        resources:
+          requests:
+            storage: 10Gi

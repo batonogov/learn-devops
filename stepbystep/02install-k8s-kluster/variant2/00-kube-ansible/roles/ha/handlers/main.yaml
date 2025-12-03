@@ -1,0 +1,10 @@
+---
+- name: restart keepalived
+  ansible.builtin.service:
+    name: keepalived
+    state: restarted
+
+- name: restart haproxy
+  ansible.builtin.service:
+    name: haproxy
+    state: restarted

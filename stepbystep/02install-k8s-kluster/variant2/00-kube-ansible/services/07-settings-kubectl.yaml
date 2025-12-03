@@ -1,0 +1,55 @@
+# Подготовка control-plane узлов
+- name: Подготовка control-plane узлов для работы с kubectl
+  become: true
+  gather_facts: false
+  hosts:
+    - k8s_masters
+  tasks:
+    - name: Создаю директорию .kube
+      become_user: root
+      ansible.builtin.file:
+        path: /root/.kube
+        state: directory
+        mode: "755"
+    - name: Копирую admin.conf в директорию .kube
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: true
+        owner: root
+        group: root
+        mode: "600"
+    - name: Копирую kube/config
+      run_once: true
+      ansible.posix.synchronize:
+        src: "/root/.kube/config" # remote host
+        dest: "~/.kube/configLocal" # localhost
+        mode: pull
+    - name: Экспортирую переменную KUBECONFIG с двумя конфига ми
+      run_once: true
+      become: false
+      ansible.builtin.shell: |
+        export KUBECONFIG=~/.kube/config:~/.kube/configLocal
+        echo $KUBECONFIG
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+
+    - name: Делаю merge kubeconfig (kubectl config view --flatten)
+      run_once: true
+      become: false
+      ansible.builtin.shell: |
+        export KUBECONFIG=~/.kube/config:~/.kube/configLocal
+        kubectl config view --flatten > ~/.kube/config-merged
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+
+    - name: Перемещаю merged kubeconfig в ~/.kube/config
+      run_once: true
+      become: false
+      ansible.builtin.shell: |
+        mv ~/.kube/config-merged ~/.kube/config
+      args:
+        executable: /bin/bash
+      delegate_to: localhost

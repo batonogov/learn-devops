@@ -1,0 +1,55 @@
+# < 1.30
+#- name: Init master control node
+#  ansible.builtin.command: kubeadm init --config /etc/kubernetes/kubeadm-config.yaml
+#  register: kubeadm_init
+
+#ansible.builtin.command: |
+#  kubeadm init \
+#  --pod-network-cidr=10.244.0.0/16 \
+#  --control-plane-endpoint=192.168.0.50:8888 \
+#  --upload-certs
+
+# > 1.30
+- name: Set cpEndpoint
+  set_fact:
+   cpEndpoint: "{% if ha_cluster_virtual_ip is defined and ha_cluster_virtual_ip != \"\" %}{{ ha_cluster_virtual_ip }}:{{ ha_cluster_virtual_port }}{% else %}{{ hostvars[groups['k8s_masters'][0]].ansible_facts.default_ipv4.address }}:6443{% endif %}"
+
+- name: Show cpEndpoint
+  ansible.builtin.debug:
+    msg: "cpEndpoint is {{ cpEndpoint }}"
+
+- name: Init master control node
+  ansible.builtin.shell: |
+   kubeadm init \
+   --apiserver-advertise-address "{{ hostvars[groups['k8s_masters'][0]].ansible_facts.default_ipv4.address }}" \
+   --control-plane-endpoint "{{ cpEndpoint }}" \
+   --pod-network-cidr "{{ pod_network_cidr }}" \
+   --service-cidr "{{ service_cidr }}" \
+   --service-dns-domain "{{ kube_domain_name }}" \
+   --cert-dir /etc/kubernetes/pki \
+   --cri-socket "{{ cri_socket }}" \
+   --image-repository "{{ imageRepository }}" \
+   --kubernetes-version "{{ kube_version }}" \
+   --node-name "{{ ansible_facts.nodename }}" \
+   --upload-certs
+
+
+- name: Install Utils
+  ansible.builtin.include_tasks: utils.yaml
+
+- name: Check for installed tigera-operator
+  ansible.builtin.command: kubectl get ns tigera-operator
+  register: tigera_operator_out
+  ignore_errors: true
+
+- name: Install tigera-operator
+  when: tigera_operator_out.rc == 1
+  ansible.builtin.shell: "kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/{{ tigera_operator_version }}/manifests/tigera-operator.yaml"
+
+- name: Copy calico-install.yaml
+  template:
+    src: calico-install.j2
+    dest: /etc/kubernetes/calico-install.yaml
+
+- name: Install Calico
+  ansible.builtin.command: kubectl apply -f /etc/kubernetes/calico-install.yaml

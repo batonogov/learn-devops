@@ -1,0 +1,7 @@
+---
+- name: Upgrade kubernetes cluster
+  hosts: k8s_cluster
+  serial: "1"
+
+  roles:
+    - upgrade-cluster

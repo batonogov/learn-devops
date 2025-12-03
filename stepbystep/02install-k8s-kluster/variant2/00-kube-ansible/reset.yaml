@@ -1,0 +1,96 @@
+---
+- name: Reset cluster
+  hosts: k8s_cluster
+
+  tasks:
+  - name: Reset k8s cluster
+    ansible.builtin.command: kubeadm reset --force
+    ignore_errors: true
+
+  - name: Disable keepalived and haproxy services
+    when:
+      - ha_cluster_virtual_ip is defined
+      - ha_cluster_virtual_ip != ""
+      - inventory_hostname in groups['k8s_masters']
+    ansible.builtin.service:
+      name: "{{ item }}"
+      state: stopped
+      enabled: false
+    with_items:
+      - keepalived
+      - haproxy
+    ignore_errors: true
+
+  - name: Uninstall HA packages RedHat
+    when:
+      - ha_cluster_virtual_ip is defined
+      - ha_cluster_virtual_ip != ""
+      - inventory_hostname in groups['k8s_masters']
+      - ansible_os_family == "RedHat"
+    ansible.builtin.dnf:
+      name:
+        - keepalived
+        - haproxy
+      state: absent
+
+  - name: Disabled containerd service
+    when: cri == "containerd"
+    ansible.builtin.service:
+      name: containerd
+      state: stopped
+      enabled: false
+
+  - name: Delete config.toml file
+    when: cri == "containerd"
+    ansible.builtin.file:
+      path: /etc/containerd/config.toml
+      state: absent
+
+  - name: Disabled CRI-O service
+    when: cri == "crio"
+    ansible.builtin.service:
+      name: crio
+      state: stopped
+      enabled: false
+
+  - name: Uninstall Kubernetes packages RedHat
+    when:
+      - ansible_os_family == "RedHat"
+    ansible.builtin.dnf:
+      name:
+        - kubectl
+        - kubeadm
+        - kubelet
+      state: absent
+
+  - name: Uninstall containerd
+    when:
+      - ansible_os_family == "RedHat" and cri == "containerd"
+    ansible.builtin.dnf:
+      name:
+        - containerd
+      state: absent
+
+  - name: Uninstall CRI-O
+    when:
+      - ansible_os_family == "RedHat" and cri == "crio"
+    ansible.builtin.dnf:
+      name:
+        - crio
+      state: absent
+
+  - name: Copy clear fw script
+    ansible.builtin.copy:
+      src: clear_fw.sh
+      dest: /root/clear_fw.sh
+      owner: root
+      mode: '0700'
+
+  - name: Clear firewall
+    ansible.builtin.shell: /root/clear_fw.sh
+    ignore_errors: true
+
+  - name: Delete k8s utils manifests
+    file:
+      path: /etc/kubernetes/utils
+      state: absent

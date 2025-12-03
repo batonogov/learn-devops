@@ -1,0 +1,18 @@
+---
+# Add link
+- name: Add directory for config file
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+    mode: '0700'
+
+- name: Remove existing kube config if present
+  ansible.builtin.file:
+    path: /root/.kube/config
+    state: absent
+
+- name: Add link for config file
+  ansible.builtin.file:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    state: link

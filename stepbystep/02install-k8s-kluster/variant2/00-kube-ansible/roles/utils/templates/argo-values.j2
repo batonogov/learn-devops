@@ -1,0 +1,72 @@
+crds:
+  keep: false
+
+global:
+  logging:
+    format: json
+    # -- Set the global logging level. One of: `debug`, `info`, `warn` or `error`
+    level: {{ argoCDLoglevel }}
+
+controller:
+  replicas: {{ argoCDControllerReplicaCount }}
+
+configs:
+  cm:
+    application.resourceTrackingMethod: {{ argoCDTrackingMethod }}
+    controller.diff.server.side: "{{ argoCDEnableServerSideDiff }}"
+    ignoreAggregatedRoles: {{ argoCDIgnoreAggregateRoles}}
+    url: https://{{ argoCDURL }}
+
+  params:
+    server.insecure: true
+
+  repositories:
+    artur-repo:
+      url: https://github.com/BigKAA/youtube
+      name: bigkaa
+      type: git
+
+  secret:
+    # -- Bcrypt hashed admin password
+    ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+    ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
+    argocdServerAdminPassword: "{{ argoCDAdminPassword }}"
+
+## Redis
+redis:
+  enabled: true
+
+## Server
+server:
+  name: server
+  replicas: {{ argoCDServerReplicaCount }}
+  certificate:
+    enabled: true
+    domain: "{{ argoCDURL }}"
+    duration: "9125h"
+    renewBefore: "360h"
+    issuer:
+      group: "cert-manager.io"
+      kind: "ClusterIssuer"
+      name: "dev-ca-issuer"
+    privateKey:
+      rotationPolicy: Always
+      encoding: PKCS8
+      algorithm: RSA
+      size: 4096
+    usages:
+      - server auth
+      - client auth
+
+  ingress:
+    enabled: true
+    controller: generic
+    annotations:
+      cert-manager.io/cluster-issuer: "dev-ca-issuer"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    ingressClassName: "system-ingress"
+    hostname: "{{ argoCDURL }}"
+    paths:
+      - /
+    pathType: Prefix
+    tls: true

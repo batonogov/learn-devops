@@ -1,0 +1,67 @@
+kubeadm:
+  children:
+    kubeadm_control_plane:
+      hosts:
+        kubeadm-cp-01:
+          ansible_host: 192.168.0.51
+        kubeadm-cp-02:
+          ansible_host: 192.168.0.52
+        kubeadm-cp-03:
+          ansible_host: 192.168.0.53
+    kubeadm_nodes:
+      hosts:
+        kubeadm-node-01:
+          ansible_host: 192.168.0.61
+        kubeadm-node-02:
+          ansible_host: 192.168.0.62
+        kubeadm-node-03:
+          ansible_host: 192.168.0.63
+        kubeadm-node-04:
+          ansible_host: 192.168.0.64
+  vars:
+    ansible_user: root
+    ansible_port: 22
+
+patroni_postgresql_cluster:
+  children:
+    patroni_postgresql_hosts:
+      hosts:
+        patroni-postgresql-01:
+          ansible_host: 10.0.75.111
+        patroni-postgresql-02:
+          ansible_host: 10.0.75.112
+        patroni-postgresql-03:
+          ansible_host: 10.0.75.113
+    haproxy_hosts:
+      hosts:
+        haproxy-01:
+          ansible_host: 10.0.75.114
+        haproxy-02:
+          ansible_host: 10.0.75.115
+  vars:
+    ansible_user: root
+    ansible_port: 22
+
+minio_hosts:
+  hosts:
+    minio1:
+      ansible_host: 10.0.75.55
+    minio2:
+      ansible_host: 10.0.75.56
+    minio3:
+      ansible_host: 10.0.75.57
+    minio4:
+      ansible_host: 10.0.75.58
+  vars:
+    ansible_user: root
+    ansible_port: 22
+
+nginx_hosts:
+  hosts:
+    nginx-01:
+      ansible_host: 10.0.75.91
+    nginx-02:
+      ansible_host: 10.0.75.92
+  vars:
+    ansible_user: root
+    ansible_port: 22

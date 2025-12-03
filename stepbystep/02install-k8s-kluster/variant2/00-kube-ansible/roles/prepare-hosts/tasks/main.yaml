@@ -1,0 +1,199 @@
+---
+- name: Install packages dnf
+  when: ansible_facts['os_family'] == "RedHat"
+  ansible.builtin.dnf:
+    name:
+      - net-tools
+      - mc
+      - iproute-tc
+      - vim
+      - git
+      - bash-completion
+      - nfs-utils
+      - tar
+      - chrony
+      - jq
+      - ipvsadm
+      - python3-pyyaml
+    state: present
+
+- name: Install packages apt
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.apt:
+    pkg:
+      - net-tools
+      - mc
+      - gpg
+      - iproute2
+      - iptables
+      - vim
+      - git
+      - bash-completion
+      - nfs-common
+      - tar
+      - ntp
+      - jq
+      - ipvsadm
+      - python3-yaml
+      - rsync
+    state: present
+
+- name: Enable NTP server chrony
+  when: ansible_facts['os_family'] == "RedHat"
+  ansible.builtin.service:
+    name: chronyd
+    state: started
+    enabled: true
+
+- name: Enable NTP server
+  when: ansible_facts['os_family'] == "Debian"
+  ansible.builtin.service:
+    name: ntp
+    state: started
+    enabled: true
+
+- name: Disable firewalld
+  when: ansible_facts['os_family'] == "RedHat"
+  ansible.builtin.service:
+    name: firewalld
+    state: stopped
+    enabled: false
+
+- name: Test swap
+  ansible.builtin.shell: "swapon --show --noheadings | wc -l"
+  register: swap_ret
+
+- name: If swap is enabled - disable it
+  ansible.builtin.command: swapoff -a
+  when: swap_ret.stdout != "0"
+
+- name: Disable SWAP in fstab
+  when: swap_ret.stdout != "0"
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\s*swap\s*.*)$'
+    replace: '# \1'
+
+- name: Check Disable SELinux
+  when: ansible_facts['os_family'] == "RedHat"
+  selinux:
+    state: disabled
+  register: selinux_ret
+
+- name: Setenforce 0
+  when: ansible_facts['os_family'] == "RedHat" and selinux_ret.changed 
+  ansible.builtin.command:
+    cmd: setenforce 0
+
+- name: Set crictl.yaml
+  ansible.builtin.template:
+    src: crictl.j2
+    dest: /etc/crictl.yaml
+    owner: root
+    mode: u=rw,g=r,o=r
+
+- name: Load modules br_netfilter
+  community.general.modprobe:
+    name: br_netfilter
+
+- name: Load modules overlay
+  community.general.modprobe:
+    name: overlay
+
+- name: Load module permanet
+  ansible.builtin.copy:
+    src: modules-kubernetes.conf
+    dest: /etc/modules-load.d/modules-kubernetes.conf
+    owner: root
+    mode: u=rw,g=r,o=r
+
+- name: Set Sysctl on all nodes
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - name: net.ipv4.ip_forward
+      value: 1
+    - name: net.bridge.bridge-nf-call-iptables
+      value: 1
+    - name: net.bridge.bridge-nf-call-ip6tables
+      value: 1
+    - name: vm.max_map_count # for opensearch & elasticserarch
+      value: 262144
+
+- name: Add PS1
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    state: present
+    line: "PS1='\\[\\e[44;36m\\]\\t:[\\w]\\[\\e[0;0m\\]\\n\\[\\e[0;31;04m\\]\\u\\[\\e[0;0m\\]@\\[\\e[0;32m\\]\\h\\[\\e[0;0m\\] \\$ '"
+
+- name: Install CRI-O
+  when: cri == "crio"
+  ansible.builtin.include_tasks: crio.yaml
+
+- name: Install containerd
+  when: cri == "containerd"
+  ansible.builtin.include_tasks: containerd.yaml
+
+- name: Install k8s files
+  block:
+
+    - name: K8s repository for Ubuntu|Debian [Key]
+      when: ansible_facts['os_family'] == "Debian"
+      ansible.builtin.apt_key:
+        # url: "https://pkgs.k8s.io/core:/stable:/v{{ kube_version | regex_search('[0-9]+.[0-9]+') }}/deb/Release.key"
+        url: "https://prod-cdn.packages.k8s.io/repositories/isv:/kubernetes:/core:/stable:/v{{ kube_version | regex_search('[0-9]+.[0-9]+') }}/deb/Release.key"
+        state: present
+        keyring: /etc/apt/trusted.gpg.d/k8s.gpg
+
+    - name: K8s repository for Ubuntu|Debian
+      when: ansible_facts['os_family'] == "Debian"
+      ansible.builtin.apt_repository:
+        # repo: "deb [signed-by=/etc/apt/trusted.gpg.d/k8s.gpg] https://pkgs.k8s.io/core:/stable:/v{{ kube_version | regex_search('[0-9]+.[0-9]+') }}/deb/ /"
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/k8s.gpg] https://prod-cdn.packages.k8s.io/repositories/isv:/kubernetes:/core:/stable:/v{{ kube_version | regex_search('[0-9]+.[0-9]+') }}/deb/ /"
+        state: present
+        filename: kubernetes
+
+    - name: Add kubernetes repository RedHat
+      when: ansible_facts['os_family'] == "RedHat"
+      ansible.builtin.yum_repository:
+        name: kubernetes
+        description: "Base programs for k8s, version: v{{ kube_version | regex_search('[0-9]+.[0-9]+') }}"
+        baseurl: "https://pkgs.k8s.io/core:/stable:/v{{ kube_version | regex_search('[0-9]+.[0-9]+') }}/rpm/"
+        gpgcheck: true
+        enabled: true
+        gpgkey:
+          - "https://pkgs.k8s.io/core:/stable:/v{{ kube_version | regex_search('[0-9]+.[0-9]+') }}/rpm/repodata/repomd.xml.key"
+        state: present
+
+#    - name: Add kubernetes repository RedHat
+#      when: ansible_facts['os_family'] == "RedHat"
+#      ansible.builtin.yum_repository:
+#        name: kubernetes.io
+#        description: "Kubernetes packages, version: v{{ kube_version | regex_search('[0-9]+.[0-9]+') }}"
+#        baseurl: "{{ kubernetes_yum_repo }}"
+#        gpgcheck: false
+#        enabled: true
+#        username: "{{ kubernetes_yum_repo_username }}"
+#        password: "{{ kubernetes_yum_repo_password }}"
+#        state: present
+
+    - name: Install k8s utils [rpm]
+      when: ansible_facts['os_family'] == "RedHat"
+      ansible.builtin.dnf:
+        name:
+          - kubectl
+          - kubelet
+          - kubeadm
+          - ipvsadm
+        state: present
+
+    - name: Install k8s utils [deb]
+      when: ansible_facts['os_family'] == "Debian"
+      ansible.builtin.apt:
+        pkg:
+          - kubectl
+          - kubelet
+          - kubeadm
+        state: present

@@ -1,0 +1,32 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: myjob
+  labels:
+    app.kubernetes.io/name: &name myjob
+    app.kubernetes.io/version: &version v0.0.1
+spec:
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: test-job
+              image: busybox:1.28
+              imagePullPolicy: IfNotPresent
+              command:
+                - 'sh'
+                - '-c'
+                - 'echo Test job running CRONJOB... && sleep 10 && exit 0'
+              resources:
+                requests:
+                  memory: "64Mi"
+                  cpu: "250m"
+                limits:
+                  memory: "128Mi"
+                  cpu: "500m"

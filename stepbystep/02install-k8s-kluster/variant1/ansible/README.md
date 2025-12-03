@@ -8,7 +8,7 @@
 
 Тестирование проводилось на **Ubuntu 24.04**
 
-Подготавливаем ВМ при помощи [плейбука](../stepbystep/02install-k8s-kluster/variant1/ansible/kubeadm.yml)
+Подготавливаем ВМ при помощи [плейбука](../stepbystep/02install-k8s-kluster/ansible/kubeadm.yml)
 
 Плейбук настроит все что нужно для работы **Kubernetes**.
 Добавит необходимые **модули ядра**, установит **kubelet**, **kubeadm**, **kubectl**, **cri-o**... и перезапустит машинки если это необходимо.
@@ -54,6 +54,14 @@ haproxy_static_pods : Наливаю haproxy static pods manifest --------------
 haproxy_static_pods : Наливаю keepalived static pods manifest ------------------------- 3.23s
 Добавляю модули br_netfilter и overlay ------------------------------------------------ 3.21s
 ```
+
+``` Копирование и мерж ~/.kube/config
+cp ~/.kube/config:~/.kube/configBcp
+export KUBECONFIG=~/.kube/config:~/.kube/configLocal
+kubectl config view --flatten > ~/.kube/config-merged
+mv ~/.kube/config-merged ~/.kube/config
+```
+
 
 Если все прошло успешно, то можно перейти к [настройке CNI](README.md#%D0%BD%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B0-cni).
 

@@ -1,0 +1,109 @@
+## ansible-palybook install-cluster.yaml --become-user=root --become
+---
+- name: Checking for an odd number of nodes.
+  hosts: groups['k8s_masters'][0]
+    
+  tasks:
+    - name: Abort if an even number of nodes
+      ansible.builtin.debug:
+        msg: "Abort. Аn even number of nodes"
+      failed_when: groups['k8s_masters'] | length | int is divisibleby 2
+
+# RED_HAT
+#- name: Удалить старый репозиторий kubernetes.io (если существует)
+#  hosts: k8s_cluster
+#  become: true
+#  tasks:
+#      - name: Удалить старый репозиторий kubernetes.io (если существует)
+#        ansible.builtin.file:
+#          path: /etc/yum.repos.d/kubernetes.io.repo
+#          state: absent
+#        when: ansible_facts['os_family'] == "RedHat"
+
+#- name: Установка Python на хостах
+#  hosts: k8s_cluster
+#  gather_facts: no
+#  become: true
+#  tasks:
+#    - name: Установить Python 3 (RedHat-подобные ОС)
+#      raw: dnf install -y python3
+#      when: ansible_facts['os_family'] is not defined or ansible_facts['os_family'] == 'RedHat'
+
+- name: Install packages
+  hosts: k8s_cluster
+
+  roles:
+    - prepare-hosts
+
+- name: Install Control nodes
+  hosts: k8s_masters
+
+  roles:
+    - role: ha
+      when: ha_cluster_virtual_ip is defined and ha_cluster_virtual_ip != ""
+    - role: master
+      when: inventory_hostname == groups['k8s_masters'][0]
+    - role: second_controls
+
+- name: Install worker nodes
+  hosts: groups['k8s_masters'][0],k8s_workers
+
+  roles:
+    - workers
+
+# Подготовка control-plane узлов
+- name: Подготовка control-plane узлов для работы с kubectl
+  become: true
+  gather_facts: false
+  hosts:
+    - k8s_masters
+  tasks:
+    - name: Создаю директорию .kube
+      become_user: root
+      ansible.builtin.file:
+        path: /root/.kube
+        state: directory
+        mode: "755"
+    - name: Копирую admin.conf в директорию .kube
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: true
+        owner: root
+        group: root
+        mode: "600"
+    - name: Копирую kube/config
+      run_once: true
+      ansible.posix.synchronize:
+        src: "/root/.kube/config" # remote host
+        dest: "~/.kube/configLocal" # localhost
+        mode: pull
+    - name: Экспортирую переменную KUBECONFIG с двумя конфига ми
+      run_once: true
+      become: false
+      ansible.builtin.shell: |
+        export KUBECONFIG=~/.kube/config:~/.kube/configLocal
+        echo $KUBECONFIG
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+
+    - name: Делаю merge kubeconfig (kubectl config view --flatten)
+      run_once: true
+      become: false
+      ansible.builtin.shell: |
+        export KUBECONFIG=~/.kube/config:~/.kube/configLocal
+        kubectl config view --flatten > ~/.kube/config-merged
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+
+    - name: Перемещаю merged kubeconfig в ~/.kube/config
+      run_once: true
+      become: false
+      ansible.builtin.shell: |
+        mv ~/.kube/config-merged ~/.kube/config
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+

@@ -1,0 +1,3 @@
+virtual_environment_api_token = "terraform@pve!provider=f0bfdb64-80aa-474f-bf1e-cdde4baa3383"
+virtual_environment_endpoint = "https://192.168.1.122:8006"
+ssh_public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKzlE/oY9h2+nZNBQ8Sa5KGT86dxnZO5le5fsSfKNW4n"

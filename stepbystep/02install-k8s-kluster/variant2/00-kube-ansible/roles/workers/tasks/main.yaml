@@ -1,0 +1,9 @@
+---
+- name: Prepare to Join
+  ansible.builtin.include_tasks: prepare.yaml
+  when: inventory_hostname == groups['k8s_masters'][0]
+  run_once: true
+
+- name: Join worker nodes
+  ansible.builtin.include_tasks: join.yaml
+  when: inventory_hostname in groups['k8s_workers']

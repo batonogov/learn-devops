@@ -1,0 +1,7 @@
+---
+- name: Test playbook
+  hosts: k8s_cluster
+
+  tasks:
+    - name: Ping my servers
+      ansible.builtin.ping:

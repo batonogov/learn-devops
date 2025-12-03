@@ -1,0 +1,4 @@
+k3s-playbook/files
+venv/
+.idea/
+.vscode/

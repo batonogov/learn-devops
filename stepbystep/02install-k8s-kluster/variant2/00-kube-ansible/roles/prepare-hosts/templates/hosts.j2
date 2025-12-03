@@ -1,0 +1,7 @@
+server = "https://docker.io"
+capabilities = ["pull", "resolve", "push"]
+
+{% for dockerhubMirrorURL in dockerhubMirrorURLs %}
+[host."https://{{ dockerhubMirrorURL }}"]
+  capabilities = ["pull", "resolve"]
+{% endfor %}

@@ -1,0 +1,56 @@
+---
+- name: Set sysctl
+  ansible.posix.sysctl:
+    name: "net.ipv4.ip_nonlocal_bind"
+    value: "1"
+    sysctl_set: true
+    state: present
+    ignoreerrors: true
+
+- name: Install packages RedHat
+  when: ansible_os_family == "RedHat"
+  ansible.builtin.dnf:
+    name:
+      - keepalived
+      - haproxy
+    state: present
+
+- name: Install packages Debian
+  when: ansible_os_family == "Debian"
+  ansible.builtin.apt:
+    name:
+      - keepalived
+      - haproxy
+    state: present
+    update_cache: true
+
+#- name: Create keepalived directory
+#  ansible.builtin.file:
+#    path: /etc/keepalived
+#    state: directory
+#    mode: '0755'
+
+- name: Copy keepalived.conf to master
+  ansible.builtin.template:
+    src: keepalived.j2
+    dest: /etc/keepalived/keepalived.conf
+    mode: '0600'
+  notify: restart keepalived
+
+- name: Copy haproxy haproxy.cfg
+  ansible.builtin.template:
+    src: haproxy.j2
+    dest: /etc/haproxy/haproxy.cfg
+    mode: '0600'
+  register: haproxy_conf
+  notify: restart haproxy
+
+- name: Enable keepalived and haproxy
+  ansible.builtin.service:
+    name: "{{ item }}"
+#    state: started
+    state: started
+    enabled: true
+  with_items:
+    - keepalived
+    - haproxy

@@ -1,0 +1,46 @@
+k8s_masters:
+  hosts:
+    # Control nodes
+    kubeadm-cp-01:
+      ansible_host: 192.168.0.51
+    kubeadm-cp-02:
+      ansible_host: 192.168.0.52
+    kubeadm-cp-03:
+      ansible_host: 192.168.0.53
+    # control2.serg.local:
+    # control3.serg.local:
+k8s_workers:
+  hosts:
+    # Worker nodes
+    kubeadm-node-01:
+      ansible_host: 192.168.0.61
+    kubeadm-node-02:
+      ansible_host: 192.168.0.62
+    kubeadm-node-03:
+      ansible_host: 192.168.0.63
+    kubeadm-node-04:
+      ansible_host: 192.168.0.64
+    # ws3.serg.local:
+    #   ansible_host: 192.168.218.176
+    # ws4.serg.local:
+    #   ansible_host: 192.168.218.177
+k8s_cluster:
+  children:
+    k8s_masters:
+    k8s_workers:
+
+#  192.168.0.56    control1
+#  192.168.0.167   control2
+#  192.168.0.183   control3
+#
+#  192.168.0.103   worker1
+#  192.168.0.33    worker2
+#  192.168.0.110   worker3
+#
+#  192.168.0.56    control1.wsr.mv
+#  192.168.0.167    control2.wsr.mv
+#  192.168.0.183   control3.wsr.mv
+#
+#  192.168.0.103    worker1.wsr.mv
+#  192.168.0.33    worker2.wsr.mv
+#  192.168.0.110   worker3.wsr.mv
