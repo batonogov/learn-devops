@@ -12,8 +12,8 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6.0.3
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
       - name: Auto Pull Request
-        uses: diillson/auto-pull-request@v1.0.1
+        uses: diillson/auto-pull-request@d026866d0d65331450c09077eee9c98e394e6e9c # v1.0.1
         with:
           destination_branch: main
