@@ -14,6 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Auto Pull Request
-        uses: diillson/auto-pull-request@d026866d0d65331450c09077eee9c98e394e6e9c # v1.0.1
+        uses: diillson/auto-pull-request@4cf50b3681cd76250f37841466e61e514a377064 # v1.0.1
         with:
           destination_branch: main
